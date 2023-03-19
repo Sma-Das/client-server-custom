@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <winsock2.h>
 
+typedef int (*CallbackFunc)(SOCKET, const sockaddr, int);
+
 #if defined(_MSC_VER) || defined(__BORLANDC__)
 #pragma comment(lib, "Ws2_32.lib")
 #endif
@@ -32,21 +34,11 @@ SOCKET createSocket(int af, int type, int protocol)
     return sock;
 }
 
-int initializeSocket(SOCKET *sock, char *ipAddr, int port)
+int initializeSocket(SOCKET *sock, struct sockaddr_in config, CallbackFunc startSocket)
 {
-    struct sockaddr_in server;
-
-    // Fill in server address information
-    server.sin_family = AF_INET;
-    server.sin_addr.s_addr = inet_addr(ipAddr);
-    server.sin_port = htons(port);
-
-    // Connect to server
-    if (connect(*sock, (struct sockaddr *)&server, sizeof(server)) == SOCKET_ERROR)
+    if (startSocket(*sock, (struct sockaddr *)&config, sizeof(config) == SOCKET_ERROR))
     {
-        printf("Connection failed\n");
         return 1;
     }
-
     return 0;
 }
