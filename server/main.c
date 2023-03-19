@@ -1,69 +1,71 @@
-#include <pthread.h>
-
 #include "../utils/config.h"
+#include "./client.h"
 
-#define MAX_CLIENTS 10
-
-int clientSockets[MAX_CLIENTS];
-int currClients = 0;
-pthread_mutex_t client_mutex;
-
-int send_message(SOCKET clientSocket, char *command)
-{
-    // Send message
-    return 0;
-}
-
-int broadcast(char *command)
-{
-    for (int i = 0; i < currClients; i++)
-    {
-        int error_code = send_message(clientSockets[i], command);
-        if (error_code)
-        {
-            printf("[!] Error sending command to client %i", i);
-        }
-    }
-}
-
-int initializeServerSocket(SOCKET *sock, int port)
+int initializeServerSocket(SOCKET *sock, char *bindAddress, int port)
 {
     struct sockaddr_in server_config;
 
     // Fill in server address information
     server_config.sin_family = AF_INET;
-    server_config.sin_addr.s_addr = INADDR_ANY;
+    server_config.sin_addr.s_addr = inet_addr(bindAddress);
     server_config.sin_port = htons(port);
 
-    // Connect to server
-    int error = initializeSocket(sock, server_config, bind);
-    if (error)
+    if (initializeSocket(sock, server_config, bind) == SOCKET_ERROR)
     {
-        printf("Connection failed\n");
+        printf("[!] Error binding socket");
+        return SOCKET_ERROR;
+    }
+    printf("[i] Socket bound to %s:%i\n", bindAddress, port);
+
+    // Listen for connections
+    printf("[i] Listening for connections...\n");
+    int result = listen(*sock, MAX_CLIENTS);
+    if (result == SOCKET_ERROR)
+    {
+        printf("Listen failed: %d\n", WSAGetLastError());
+        closesocket(*sock);
+        WSACleanup();
+        return SOCKET_ERROR;
     }
 
-    return error;
+    return 0;
 }
 
 int main(void)
 {
 
-    SOCKET server_socket, client_socket;
-    struct sockaddr_in server_addr, client_addr;
+    SOCKET serverSocket;
     HANDLE threads[MAX_CLIENTS];
     int num_threads = 0;
 
-    // Initialize Winsock
-    WSAStartup(MAKEWORD(2, 2), &wsa_data);
-
     // Create the server socket
-    server_socket = createSocket(AF_INT, SOCK_STREAM, 0);
-    initializeServerSocket(&server_socket, PORT);
-    // Listen for connections
-    listen(server_socket, MAX_CLIENTS);
+    serverSocket = createSocket(AF_INET, SOCK_STREAM, 0);
+    initializeServerSocket(&serverSocket, HOST, PORT);
 
-    while (true)
+    while (1)
     {
-        SOCKET tempClientSocket =
+        struct sockaddr clientAddr;
+        int clientAddrLen;
+        SOCKET newClient = accept(serverSocket, &clientAddr, &clientAddrLen);
+        if (newClient == INVALID_SOCKET)
+        {
+            printf("Accept failed: %d\n", WSAGetLastError());
+            closesocket(serverSocket);
+            WSACleanup();
+            return 1;
+        }
+        printf("Client connected!\n");
+        if (!addClient(newClient, (struct sockaddr_in *)&clientAddr, clientAddrLen))
+        {
+            printf("[!] Failed to add client");
+        }
+
+        // Handle the connection here...
+
+        // Close the client socket
+        closesocket(clientSockets[currClients]);
     }
+    closesocket(serverSocket);
+    WSACleanup();
+    return 0;
 }
