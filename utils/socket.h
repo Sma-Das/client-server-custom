@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <winsock2.h>
 
-typedef int (*CallbackFunc)(SOCKET, const sockaddr, int);
+typedef int (*CallbackFunc)(SOCKET, const struct sockaddr *, int);
 
 #if defined(_MSC_VER) || defined(__BORLANDC__)
 #pragma comment(lib, "Ws2_32.lib")
@@ -36,9 +36,9 @@ SOCKET createSocket(int af, int type, int protocol)
 
 int initializeSocket(SOCKET *sock, struct sockaddr_in config, CallbackFunc startSocket)
 {
-    if (startSocket(*sock, (struct sockaddr *)&config, sizeof(config) == SOCKET_ERROR))
+    if (startSocket(*sock, (struct sockaddr *)&config, sizeof(config)) == SOCKET_ERROR)
     {
-        return 1;
+        return SOCKET_ERROR;
     }
     return 0;
 }
