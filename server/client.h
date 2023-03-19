@@ -23,10 +23,16 @@ int addClient(SOCKET newClientSocket, struct sockaddr_in *clientAddress, int cli
     return false;
 }
 
+void closeConnection(Client client)
+{
+    closesocket(client.socket);
+}
+
 void removeClient(int index)
 {
     if (index < numClients)
     {
+        closeConnection(currClients[index]);
         for (int i = index; i < MAX_CLIENTS - 1; i++)
         {
             currClients[i] = currClients[i + 1];

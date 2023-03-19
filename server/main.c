@@ -61,9 +61,6 @@ int main(void)
         }
 
         // Handle the connection here...
-
-        // Close the client socket
-        closesocket(clientSockets[currClients]);
     }
     closesocket(serverSocket);
     WSACleanup();
