@@ -1,6 +1,7 @@
 #define BUF_SIZE 4096
-#define bool int
 #define PORT 7777
+
+#define bool int
 
 #include <stdio.h>
 #include <stdlib.h>
