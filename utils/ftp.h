@@ -14,7 +14,7 @@ int downloadFileFtp(const char *url, const char *username, const char *password,
     }
 
     // Connect to FTP server
-    hFtpSession = InternetConnect(hInternet, url, INTERNET_DEFAULT_FTP_PORT, username, password, INTERNET_SERVICE_FTP, 0, 0);
+    hFtpSession = InternetConnectA(hInternet, url, INTERNET_DEFAULT_FTP_PORT, username, password, INTERNET_SERVICE_FTP, 0, 0);
     if (!hFtpSession)
     {
         InternetCloseHandle(hInternet);
@@ -53,7 +53,7 @@ int uploadFileFtp(const char *url, const char *username, const char *password, c
     }
 
     // Connect to FTP server
-    hFtpSession = InternetConnect(hInternet, url, INTERNET_DEFAULT_FTP_PORT, username, password, INTERNET_SERVICE_FTP, 0, 0);
+    hFtpSession = InternetConnectA(hInternet, url, INTERNET_DEFAULT_FTP_PORT, username, password, INTERNET_SERVICE_FTP, 0, 0);
     if (!hFtpSession)
     {
         InternetCloseHandle(hInternet);

@@ -12,7 +12,7 @@ void to_uppercase(char *string)
 {
     while (*string)
     {
-        *string = toupper(*string);
+        *(string) = toupper(*string);
         string++;
     };
 }
