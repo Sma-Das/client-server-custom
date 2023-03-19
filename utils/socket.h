@@ -4,7 +4,7 @@
 
 #pragma comment(lib, "ws2_32.lib")
 
-SOCKET create_socket(int af, int type, int protocol)
+SOCKET createSocket(int af, int type, int protocol)
 {
     WSADATA wsa;
     SOCKET sock;
