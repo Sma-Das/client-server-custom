@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <winsock2.h>
 
-#pragma comment(lib, "ws2_32.lib")
+#if defined(_MSC_VER) || defined(__BORLANDC__)
+#pragma comment(lib, "Ws2_32.lib")
+#endif
 
 SOCKET createSocket(int af, int type, int protocol)
 {

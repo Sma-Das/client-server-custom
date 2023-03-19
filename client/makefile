@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -g -lwininet
+CFLAGS = -Wall -g -lwininet -lws2_32
 
 client:
-	$(CC) $(CFLAGS) main.c -o client.exe
+	$(CC) main.c $(CFLAGS) -o client.exe
