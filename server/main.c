@@ -1,5 +1,5 @@
 #include "../utils/config.h"
-#include "./client.h"
+#include "./clientSocket.h"
 
 int initializeServerSocket(SOCKET *sock, char *bindAddress, int port)
 {
