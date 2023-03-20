@@ -8,22 +8,22 @@ typedef struct
     SOCKET socket;
     struct sockaddr_in address;
     int addressLength;
-} Client;
+} CLIENT;
 
-Client currClients[MAX_CLIENTS];
+CLIENT currClients[MAX_CLIENTS];
 int numClients;
 
 int addClient(SOCKET newClientSocket, struct sockaddr_in *clientAddress, int clientAddressLength)
 {
     if (numClients < MAX_CLIENTS)
     {
-        currClients[numClients++] = (Client){newClientSocket, *clientAddress, clientAddressLength};
-        return true;
+        currClients[numClients++] = (CLIENT){newClientSocket, *clientAddress, clientAddressLength};
+        return TRUE;
     }
-    return false;
+    return FALSE;
 }
 
-void closeConnection(Client client)
+void closeConnection(CLIENT client)
 {
     closesocket(client.socket);
 }
@@ -41,7 +41,7 @@ void removeClient(int index)
     }
 }
 
-int sendMessage(Client client, char *message)
+int sendMessage(CLIENT client, char *message)
 {
     return send(client.socket, message, sizeof(message), 0x0);
 }

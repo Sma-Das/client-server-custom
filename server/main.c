@@ -1,68 +1,62 @@
 #include "../utils/config.h"
-#include "./clientSocket.h"
 
-int initializeServerSocket(SOCKET *sock, char *bindAddress, int port)
+int initializeServer(SOCKET *socket, char *bindAddress, int port)
 {
-    struct sockaddr_in server_config;
-
-    // Fill in server address information
-    server_config.sin_family = AF_INET;
-    server_config.sin_addr.s_addr = inet_addr(bindAddress);
-    server_config.sin_port = htons(port);
-
-    if (initializeSocket(sock, server_config, bind) == SOCKET_ERROR)
+    if (!(1 < port && port < (1 << 16)))
     {
-        printf("[!] Error binding socket");
+        printf("[E] Invalid port [%d] supplied", port);
         return SOCKET_ERROR;
     }
-    printf("[i] Socket bound to %s:%i\n", bindAddress, port);
+    printf("[i] Creating socket on %s:%d\n", bindAddress, port);
 
-    // Listen for connections
-    printf("[i] Listening for connections...\n");
-    int result = listen(*sock, MAX_CLIENTS);
-    if (result == SOCKET_ERROR)
+    struct sockaddr_in serverConfig;
+    serverConfig.sin_family = AF_INET;
+    serverConfig.sin_addr.s_addr = inet_addr(bindAddress);
+    serverConfig.sin_port = htons(port);
+
+    printf("[i] Initializing socket\n");
+    if (initializeSocket(socket, serverConfig, bind) == SOCKET_ERROR)
     {
-        printf("Listen failed: %d\n", WSAGetLastError());
-        closesocket(*sock);
-        WSACleanup();
+        printf("[E] Failed to initialize socket");
         return SOCKET_ERROR;
     }
+    printf("[i] Successfully bound to %s:%i\n", bindAddress, port);
 
-    return 0;
+    if (listen(*socket, 1) == SOCKET_ERROR)
+    {
+        printf("[E] Failed to listen");
+        return SOCKET_ERROR;
+    }
+    printf("[i] Listening for connections ");
+    return 0x0;
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
+    SOCKET serverSocket = createSocket(AF_INET, SOCK_STREAM, 0x0);
 
-    SOCKET serverSocket;
-    HANDLE threads[MAX_CLIENTS];
-    int num_threads = 0;
+    // Parse bind address and port
+    if (argc != 3)
+    {
+        printf("Invalid number of args: %i\n", argc);
+        printf("Format: %s [HOST] [PORT]", argv[0]);
+        return 1;
+    }
+    char *host = argv[1];
+    int port = strtol(argv[2], NULL, 0xA);
 
-    // Create the server socket
-    serverSocket = createSocket(AF_INET, SOCK_STREAM, 0);
-    initializeServerSocket(&serverSocket, HOST, PORT);
+    // Initialize server socket
+    if (initializeServer(&serverSocket, host, port) == SOCKET_ERROR)
+    {
+        closesocket(serverSocket);
+        WSACleanup();
+        return 2;
+    }
 
     while (1)
     {
-        struct sockaddr clientAddr;
-        int clientAddrLen;
-        SOCKET newClient = accept(serverSocket, &clientAddr, &clientAddrLen);
-        if (newClient == INVALID_SOCKET)
-        {
-            printf("Accept failed: %d\n", WSAGetLastError());
-            closesocket(serverSocket);
-            WSACleanup();
-            return 1;
-        }
-        printf("Client connected!\n");
-        if (!addClient(newClient, (struct sockaddr_in *)&clientAddr, clientAddrLen))
-        {
-            printf("[!] Failed to add client");
-        }
-
-        // Handle the connection here...
     }
-    closesocket(serverSocket);
+
     WSACleanup();
     return 0;
 }
