@@ -1,6 +1,6 @@
 #include "../utils/config.h"
 
-int initializeClientSocket(SOCKET *sock, char *ipAddr, int port)
+int initializeClientSocket(SOCKET *sock, const char *ipAddr, int port)
 {
     struct sockaddr_in server;
 
@@ -19,17 +19,35 @@ int initializeClientSocket(SOCKET *sock, char *ipAddr, int port)
     return error;
 }
 
+void serverHandler(SOCKET socket)
+{
+    char buffer[BUF_SIZE] = "Hello there!\n";
+    while (TRUE)
+    {
+        send(socket, buffer, BUF_SIZE, 0x0);
+        break;
+    }
+    closesocket(socket);
+    return;
+}
+
 int main(void)
 {
     printf("[i] Initializing Client\n");
-    char *serverIp = getUserInput("Server IP Address: ", BUF_SIZE);
-    char *serverPort = getUserInput("Server Port:", BUF_SIZE);
+    const char *serverIp = getUserInput("Server IP Address: ", BUF_SIZE);
+    // char *serverPort = getUserInput("Server Port:", BUF_SIZE);
+    // int port = strtol(serverPort, NULL, 0xA);
 
-    SOCKET client_socket = createSocket(AF_INET, SOCK_STREAM, 0);
-    int error_code = initializeClientSocket(&client_socket, serverIp, serverPort);
+    SOCKET clientSocket = createSocket(AF_INET, SOCK_STREAM, 0);
+    int error_code = initializeClientSocket(&clientSocket, serverIp, PORT);
+    printf("%s\n", serverIp);
     if (error_code)
     {
         printf("[E] Could not connect to %s on port %i\n", serverIp, PORT);
         printf("[i] Exiting...\n");
     }
+    serverHandler(clientSocket);
+
+    WSACleanup();
+    return 0;
 }
