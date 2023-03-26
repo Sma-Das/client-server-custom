@@ -11,13 +11,16 @@ static char *commands[NUM_COMMANDS] = {"UPLOAD", "DOWNLOAD", "INFORMATION", "PRO
 
 unsigned char encodeCommand(char *command)
 {
-
-    to_uppercase(command);
+    if (command == NULL)
+    {
+        return INVALID_COMMAND;
+    }
+    strupr(command);
     for (int i = 0; i < NUM_COMMANDS; i++)
     {
         if (strcmp(command, commands[i]) == 0)
         {
-            return (0xF0 ^ (1 << i << 4)) | 1 << i;
+            return (0xF0 ^ (i << SHIFT)) | i;
         }
     }
     return INVALID_COMMAND;
