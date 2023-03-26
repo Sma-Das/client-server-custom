@@ -34,6 +34,22 @@ int initializeServer(SOCKET *socket, char *bindAddress, int port)
     return 0x0;
 }
 
+void clientHandler(SOCKET clientSocket)
+{
+    char buffer[BUF_SIZE];
+    int bytesReceived;
+    while (TRUE)
+    {
+        bytesReceived = recv(clientSocket, buffer, BUF_SIZE, 0x0);
+        if (bytesReceived == SOCKET_ERROR)
+        {
+            return;
+        }
+        buffer[bytesReceived] = '\0';
+        printf("%s", buffer);
+    }
+}
+
 int main(int argc, char *argv[])
 {
     SOCKET serverSocket = createSocket(AF_INET, SOCK_STREAM, 0x0);
