@@ -23,9 +23,10 @@ int main(void)
 {
     printf("[i] Initializing Client\n");
     char *serverIp = getUserInput("Server IP Address: ", BUF_SIZE);
+    char *serverPort = getUserInput("Server Port:", BUF_SIZE);
 
     SOCKET client_socket = createSocket(AF_INET, SOCK_STREAM, 0);
-    int error_code = initializeClientSocket(&client_socket, serverIp, PORT);
+    int error_code = initializeClientSocket(&client_socket, serverIp, serverPort);
     if (error_code)
     {
         printf("[E] Could not connect to %s on port %i\n", serverIp, PORT);
