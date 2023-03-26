@@ -1,21 +1,13 @@
 #include <string.h>
 #include <ctype.h>
 
-#define NUM_COMMANDS 4
+#define NUM_COMMANDS 5
 #define INVALID_COMMAND 0xFF
 #define INVALID_COMMAND_TYPE "INVALID"
+#define SHIFT 4
+#define PREAMBLE_FMT "%s;;"
 
-static char *commands[NUM_COMMANDS] = {"UPLOAD", "DOWNLOAD", "INFORMATION", "PROCESSES"};
-
-// Converts a string inplace to uppercase
-void to_uppercase(char *string)
-{
-    while (*string)
-    {
-        *(string) = toupper(*string);
-        string++;
-    };
-}
+static char *commands[NUM_COMMANDS] = {"UPLOAD", "DOWNLOAD", "INFORMATION", "PROCESSES", "QUIT"};
 
 unsigned char encodeCommand(char *command)
 {
