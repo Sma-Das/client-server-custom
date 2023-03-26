@@ -72,9 +72,13 @@ int main(int argc, char *argv[])
         return 2;
     }
 
-    while (1)
-    {
-    }
+    SOCKET clientSocket;
+    struct sockaddr_in clientAddr;
+    int clientAddrLen = sizeof(clientAddr);
+    // Currenting a 1-1 server-client relationship
+    clientSocket = accept(serverSocket, (struct sockaddr *)&clientAddr, &clientAddrLen);
+    printf("[!] New client %s:%d\n", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
+    clientHandler(clientSocket);
 
     WSACleanup();
     return 0;
