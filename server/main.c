@@ -1,4 +1,5 @@
 #include "../utils/config.h"
+#define MAX_CLIENTS 1
 
 int initializeServer(SOCKET *socket, char *bindAddress, int port)
 {
@@ -22,12 +23,14 @@ int initializeServer(SOCKET *socket, char *bindAddress, int port)
     }
     printf("[i] Successfully bound to %s:%i\n", bindAddress, port);
 
-    if (listen(*socket, 1) == SOCKET_ERROR)
+    if (listen(*socket, MAX_CLIENTS) == SOCKET_ERROR)
     {
-        printf("[E] Failed to listen");
+        printf("[E] Failed to listen\n");
         return SOCKET_ERROR;
     }
-    printf("[i] Listening for connections ");
+    printf("[i] Listening for connections\n");
+
+    // Sucessfully created listening socket
     return 0x0;
 }
 
