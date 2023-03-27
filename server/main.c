@@ -34,19 +34,57 @@ int initializeServer(SOCKET *socket, char *bindAddress, int port)
     return 0x0;
 }
 
-void clientHandler(SOCKET clientSocket)
+BOOLEAN getUserCommand(COMMAND *command)
 {
-    char buffer[BUF_SIZE];
-    int bytesReceived;
     while (TRUE)
     {
-        bytesReceived = recv(clientSocket, buffer, BUF_SIZE, 0x0);
-        if (bytesReceived == SOCKET_ERROR)
+        char *userCommand = getUserInput("[>] Command: ", BUF_SIZE);
+        strip(userCommand);
+        COMMAND cmd = encodeCommand(userCommand);
+        if (cmd != INVALID_COMMAND)
         {
-            return;
+            *command = cmd;
+            return strcmp(userCommand, QUIT) == 0;
         }
-        buffer[bytesReceived] = '\0';
-        printf("%s", buffer);
+        printf("[!] Invalid Command Supplied\n");
+    }
+}
+
+int sendCommand(SOCKET *socket, char *message)
+{
+    return send(*socket, message, strlen(message), 0x0);
+}
+
+void clientHandler(SOCKET clientSocket)
+{
+    char *URL;
+    COMMAND command;
+    BOOLEAN quit = FALSE;
+    char message[BUF_SIZE];
+    while (!quit)
+    {
+        int commandSize = 0;
+        quit = getUserCommand(&command);
+
+        BOOLEAN special = isSpecial(command);
+        if (special)
+        {
+            URL = getUserInput("[>] URL: ", BUF_SIZE - sizeof PREAMBLE_FMT);
+            strip(URL);
+            commandSize = strlen(URL);
+        }
+        snprintf(message, BUF_SIZE, PREAMBLE_FMT, command, commandSize);
+        sendCommand(&clientSocket, message);
+        if (special)
+        {
+            snprintf(message, BUF_SIZE, SPECIAL_FMT, command, commandSize, URL);
+            printf("%s\n", message);
+            sendCommand(&clientSocket, message);
+        }
+    }
+    if (quit)
+    {
+        printf("[i] Quit command received");
     }
 }
 
