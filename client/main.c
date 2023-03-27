@@ -21,11 +21,13 @@ int initializeClientSocket(SOCKET *sock, const char *ipAddr, int port)
 
 void serverHandler(SOCKET socket)
 {
-    char buffer[BUF_SIZE] = "Hello there!\n";
+    int bytesReceived;
+    char buffer[BUF_SIZE];
     while (TRUE)
     {
-        send(socket, buffer, BUF_SIZE, 0x0);
-        break;
+        bytesReceived = recv(socket, buffer, BUF_SIZE, 0x0);
+        buffer[bytesReceived] = '\0';
+        printf("Received: %s\n", buffer);
     }
     closesocket(socket);
     return;
