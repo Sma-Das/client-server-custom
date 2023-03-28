@@ -1,7 +1,7 @@
 #include <string.h>
 #include <windef.h>
 
-#define COMMAND unsigned char
+#include "types.h"
 
 #define NUM_COMMANDS 5
 #define NUM_SPEC_CMD 2
@@ -33,7 +33,6 @@ COMMAND encodeCommand(char *command)
     {
         return INVALID_COMMAND;
     }
-    printf("C:%s\n", command);
     strupr(command);
     for (int i = 0; i < NUM_COMMANDS; i++)
     {

@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "./types.h"
 #include "./command.h"
 #include "./user_io.h"
 #include "./socket.h"
