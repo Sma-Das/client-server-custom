@@ -3,8 +3,6 @@
 #define HOST "127.0.0.1"
 #define PORT 7777
 
-#define bool int
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
