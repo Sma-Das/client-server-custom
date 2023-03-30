@@ -1,5 +1,6 @@
 #include <string.h>
 #include <windef.h>
+#include <stdio.h>
 
 #include "types.h"
 
@@ -11,7 +12,7 @@
 
 #define SHIFT 4
 
-#define PREAMBLE_FMT "%x;;%i"
+#define PREAMBLE_FMT "%hhu;;%i"
 #define SPECIAL_FMT PREAMBLE_FMT ";;%s"
 
 static char *commands[NUM_COMMANDS] = {"UPLOAD", "DOWNLOAD", "INFORMATION", "PROCESSES", QUIT};
@@ -70,4 +71,16 @@ char *decodeCommand(COMMAND command)
     }
 
     return commands[index];
+}
+
+void parseCommand(char *buffer, COMMAND *commandCode, int *bufferSize, char *URL, BOOLEAN special)
+{
+    if (special)
+    {
+        sscanf(buffer, SPECIAL_FMT, commandCode, bufferSize, URL);
+    }
+    else
+    {
+        sscanf(buffer, PREAMBLE_FMT, commandCode, bufferSize);
+    }
 }

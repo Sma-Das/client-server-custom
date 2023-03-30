@@ -1,5 +1,10 @@
+#include <winsock2.h>
+#include <windows.h>
+
 #include "../utils/config.h"
-#define MAX_CLIENTS 1
+#include "../utils/command.h"
+#include "../utils/socket.h"
+#include "../utils/userIO.h"
 
 int initializeServer(SOCKET *socket, char *bindAddress, int port)
 {

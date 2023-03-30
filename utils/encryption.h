@@ -7,8 +7,7 @@
 INT4 generateKey(COMMAND commandCode, INT4 seed)
 {
     srand(seed);
-    INT4 key = 0 ^ commandCode;
-    INT4 random = rand();
+    INT4 random = rand(), key = 0 ^ commandCode;
     if (sizeof(COMMAND) != 1)
     {
         exit(90);
@@ -31,14 +30,13 @@ void encrypt(COMMAND commandCode, char *buffer, int bufferSize, int rounds)
     }
     for (int i = 0; i < rounds; i++)
     {
-        for (int j = 0; j < bufferSize; j++)
+        for (int j = 0; j < bufferSize - 1; j++)
         {
-            if (j % sizeof(INT4) == 0)
+            if (keyIdx % sizeof(INT4) == 0)
             {
                 key = generateKey(commandCode, key);
-                keyIdx ^= keyIdx;
             }
-            buffer[j] ^= (key >> keyIdx++) & 0xFF;
+            buffer[j] ^= (key >> keyIdx++ % 8) & 0xFF;
         }
     }
 }
