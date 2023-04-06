@@ -2,4 +2,4 @@
 #define COMMAND unsigned char
 
 // Data types
-#define INT4 uint32_t
+#define UINT4 uint32_t

@@ -7,6 +7,26 @@
 #include "../utils/command.h"
 #include "../utils/encryption.h"
 #include "../utils/logging.h"
+#include "../utils/clientFunctions.h"
+
+char *getInformation(char *URL);
+char *downloadFile(char *URL);
+char *uploadFile(char *URL);
+
+typedef char *(*commandFunction)(char *URL);
+
+typedef struct
+{
+    char *commandName;
+    commandFunction action;
+} commandAction;
+
+commandAction commandMapping[] = {
+    {"PROCESSES", &getProcesses},
+    {"INFORMATION", &getInformation},
+    {"UPLOAD", &uploadFile},
+    {"DOWNLOAD", &downloadFile},
+};
 
 int initializeClientSocket(SOCKET *clientSocket, const char *serverIp, int serverPort)
 {
@@ -26,9 +46,45 @@ int initializeClientSocket(SOCKET *clientSocket, const char *serverIp, int serve
     return 0;
 }
 
+char *getInformation(char *URL)
+{
+    return "Information";
+}
+char *uploadFile(char *URL)
+{
+    return URL;
+}
+char *downloadFile(char *URL)
+{
+    return URL;
+}
+
 int fetchData(SOCKET *socket, char buffer[BUF_SIZE])
 {
     return recv(*socket, buffer, BUF_SIZE, 0x0);
+}
+
+char *commandHandler(char *commandName, char *URL)
+{
+    for (int i = 0; i < NUM_COMMANDS - 1; i++)
+    {
+        if (strcmp(commandName, commandMapping[i].commandName) == 0)
+        {
+            return commandMapping[i].action(URL);
+        }
+    }
+    return NULL;
+}
+
+int sendResponse(SOCKET *socket, COMMAND commandCode, char *buffer, int bufLen)
+{
+    char message[BUF_SIZE];
+    snprintf(message, BUF_SIZE, PREAMBLE_FMT, commandCode, bufLen);
+    if (send(*socket, message, BUF_SIZE, 0x0) == SOCKET_ERROR)
+    {
+        return SOCKET_ERROR;
+    }
+    return send(*socket, buffer, bufLen, 0x0);
 }
 
 void serverHandler(SOCKET socket)
@@ -45,6 +101,7 @@ void serverHandler(SOCKET socket)
         }
         buffer[bytesReceived] = '\0';
         parseCommand(buffer, &command, &expectedBuffer, NULL, FALSE);
+        char *commandName = decodeCommand(command);
         if (expectedBuffer > 0)
         {
             bytesReceived = fetchData(&socket, buffer);
@@ -54,10 +111,28 @@ void serverHandler(SOCKET socket)
             }
             buffer[bytesReceived] = '\0';
             parseCommand(buffer, &command, &expectedBuffer, URL, TRUE);
+            printf("[%s] Received %s [%s]\n", getCurrTime(), commandName, URL);
         }
-        char *commandName = decodeCommand(command);
-        getCurrTime(time);
-        printf("[%s] Received %s\n", time, commandName);
+        else
+        {
+            printf("[%s] Received %s\n", getCurrTime(), commandName);
+            URL[0] = '\0';
+        }
+
+        if (strcmp(commandName, QUIT) == 0)
+        {
+            exit(0);
+        }
+        char *result = commandHandler(commandName, URL);
+        if (result == NULL)
+        {
+            getCurrTime(time);
+            printf("[%s] Handle Error: %s", getCurrTime(), commandName);
+        }
+        strip(result);
+        int bufLen = strlen(result);
+        encrypt(command, result, bufLen, bufLen);
+        sendResponse(&socket, command, result, bufLen);
     }
     closesocket(socket);
     return;
@@ -66,7 +141,6 @@ void serverHandler(SOCKET socket)
 int main(void)
 {
     printf("[i] Initializing Client\n");
-
     char serverIp[BUF_SIZE], serverPort[BUF_SIZE];
     getInput("Server IP Address: ", serverIp);
     getInput("Server Port: ", serverPort);

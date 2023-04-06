@@ -5,6 +5,7 @@
 #include "../utils/command.h"
 #include "../utils/socket.h"
 #include "../utils/userIO.h"
+#include "../utils/encryption.h"
 
 int initializeServer(SOCKET *socket, char *bindAddress, int port)
 {
@@ -60,12 +61,18 @@ int sendCommand(SOCKET *socket, char *message)
     return send(*socket, message, strlen(message), 0x0);
 }
 
+int fetchData(SOCKET *socket, char buffer[BUF_SIZE])
+{
+    return recv(*socket, buffer, BUF_SIZE, 0x0);
+}
+
 void clientHandler(SOCKET clientSocket)
 {
     char *URL;
     COMMAND command;
     BOOLEAN quit = FALSE;
     char message[BUF_SIZE];
+    int expectedBuffer;
     while (!quit)
     {
         int commandSize = 0;
@@ -79,17 +86,35 @@ void clientHandler(SOCKET clientSocket)
             commandSize = strlen(URL);
         }
         snprintf(message, BUF_SIZE, PREAMBLE_FMT, command, commandSize);
-        sendCommand(&clientSocket, message);
+        if (sendCommand(&clientSocket, message) == SOCKET_ERROR)
+        {
+            printf("[!] Could not send command\n");
+        }
         if (special)
         {
             snprintf(message, BUF_SIZE, SPECIAL_FMT, command, commandSize, URL);
-            printf("%s\n", message);
-            sendCommand(&clientSocket, message);
+            if (sendCommand(&clientSocket, message) == SOCKET_ERROR)
+            {
+                printf("[!] Could not send URL\n");
+            }
         }
+        if (fetchData(&clientSocket, message) == SOCKET_ERROR)
+        {
+            printf("[!] Received Invalid Data\n");
+        }
+        parseCommand(message, &command, &expectedBuffer, URL, isSpecial(command));
+        char result[expectedBuffer];
+        if (fetchData(&clientSocket, result) == SOCKET_ERROR)
+        {
+            printf("[!] Invalid Response");
+        }
+        result[expectedBuffer] = '\0';
+        encrypt(command, result, expectedBuffer, expectedBuffer);
+        printf("%s\n", result);
     }
     if (quit)
     {
-        printf("[i] Quit command received");
+        printf("[i] Quit command received\n");
     }
 }
 
@@ -120,7 +145,7 @@ int main(int argc, char *argv[])
     int clientAddrLen = sizeof(clientAddr);
     // Currenting a 1-1 server-client relationship
     clientSocket = accept(serverSocket, (struct sockaddr *)&clientAddr, &clientAddrLen);
-    printf("[!] New client %s:%d\n", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
+    printf("[i] New client %s:%d\n", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
     clientHandler(clientSocket);
 
     WSACleanup();

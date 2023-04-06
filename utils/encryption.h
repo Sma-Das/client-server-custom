@@ -4,10 +4,23 @@
 
 #include "types.h"
 
-INT4 generateKey(COMMAND commandCode, INT4 seed)
+UINT4 extendByte(unsigned char byte)
+{
+    /* A more legible version is:
+    UINT4 result;
+    for (int i = 0; i < sizeof(UINT4); i++)
+    {
+        result |= byte << (8 * i);
+    }
+    return result;
+    */
+    return byte << 24 | byte << 16 | byte << 8 | byte;
+}
+
+UINT4 generateKey(COMMAND commandCode, UINT4 seed)
 {
     srand(seed);
-    INT4 random = rand(), key = 0 ^ commandCode;
+    UINT4 random = rand(), key = 0 ^ commandCode;
     if (sizeof(COMMAND) != 1)
     {
         exit(90);
@@ -22,7 +35,7 @@ INT4 generateKey(COMMAND commandCode, INT4 seed)
 
 void encrypt(COMMAND commandCode, char *buffer, int bufferSize, int rounds)
 {
-    INT4 key = 0x0;
+    UINT4 key = extendByte(commandCode);
     int keyIdx = 0;
     if (rounds == 0)
     {
@@ -32,7 +45,7 @@ void encrypt(COMMAND commandCode, char *buffer, int bufferSize, int rounds)
     {
         for (int j = 0; j < bufferSize - 1; j++)
         {
-            if (keyIdx % sizeof(INT4) == 0)
+            if (keyIdx % sizeof(UINT4) == 0)
             {
                 key = generateKey(commandCode, key);
             }

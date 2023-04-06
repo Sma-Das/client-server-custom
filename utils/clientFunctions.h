@@ -3,20 +3,20 @@
 #include <stdio.h>
 #include <string.h>
 
-#define BUFFER_SIZE 4096
+#include "config.h"
 
-char *getPRocesses()
+char *getProcesses(char *URL)
 {
-    DWORD processIds[1024];
+    DWORD processIds[128];
     DWORD bytesReturned;
     if (!EnumProcesses(processIds, sizeof(processIds), &bytesReturned))
     {
-        fprintf(stderr, "Error: EnumProcesses failed with error %d\n", GetLastError());
+        fprintf(stderr, "Error: EnumProcesses failed with error %lu\n", GetLastError());
         return NULL;
     }
     int count = bytesReturned / sizeof(DWORD);
 
-    char *buffer = (char *)malloc(BUFFER_SIZE);
+    char *buffer = (char *)malloc(BUF_SIZE);
     if (buffer == NULL)
     {
         fprintf(stderr, "Error: Out of memory\n");
@@ -33,27 +33,15 @@ char *getPRocesses()
             if (GetModuleFileNameExA(processHandle, NULL, processName, MAX_PATH))
             {
                 char processIdString[16];
-                snprintf(processIdString, sizeof(processIdString), "%d", processIds[i]);
-                strncat(buffer, processIdString, BUFFER_SIZE - strlen(buffer) - 1);
-                strncat(buffer, ":", BUFFER_SIZE - strlen(buffer) - 1);
-                strncat(buffer, processName, BUFFER_SIZE - strlen(buffer) - 1);
-                strncat(buffer, "\n", BUFFER_SIZE - strlen(buffer) - 1);
+                snprintf(processIdString, sizeof(processIdString), "%lu", processIds[i]);
+                strncat(buffer, processIdString, BUF_SIZE - strlen(buffer) - 1);
+                strncat(buffer, ":", BUF_SIZE - strlen(buffer) - 1);
+                strncat(buffer, processName, BUF_SIZE - strlen(buffer) - 1);
+                strncat(buffer, "\n", BUF_SIZE - strlen(buffer) - 1);
             }
             CloseHandle(processHandle);
         }
     }
 
     return buffer;
-}
-
-int main()
-{
-    char *processListString = getPRocesses();
-    if (processListString != NULL)
-    {
-        printf("%s\n", processListString);
-        printf("%d\n", strlen(processListString));
-        free(processListString);
-    }
-    return 0;
 }
