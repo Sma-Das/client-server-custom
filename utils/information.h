@@ -119,8 +119,9 @@ void getOperatingSystem(char buffer[BUF_SIZE])
 
 void getUsername(char buffer[BUF_SIZE])
 {
+    char username[BUF_SIZE];
+    GetUserNameA(username, (LPDWORD)BUF_SIZE);
     snprintf(buffer, BUF_SIZE, "Username: %s", username);
-    GetUserNameA(buffer, BUF_SIZE);
 }
 
 int getTotalSize(char *buffer[], int size)
