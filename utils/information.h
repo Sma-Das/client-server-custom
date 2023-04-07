@@ -123,6 +123,16 @@ void getUsername(char buffer[BUF_SIZE])
     GetUserNameA(buffer, BUF_SIZE);
 }
 
+int getTotalSize(char *buffer[], int size)
+{
+    int totalSize = 0;
+    for (int i = 0; i < size; i++)
+    {
+        totalSize += strlen(buffer[i]);
+    }
+    return totalSize;
+}
+
 void truncate(char *buffer, int bufferSize)
 {
     buffer[bufferSize / 2] = '\0';
@@ -135,5 +145,19 @@ void getInformation(char buffer[BUF_SIZE])
     getIpAddress(ipAddress);
     getOperatingSystem(operatingSystem);
     getMacAddress(macAddress);
+
+    int numInf = 4;
+    char *buffer[numInf] = {username, ipAddress, operatingSystem, macAddress};
+    while (TRUE)
+    {
+        if (!getTotalSize(buffer, numInf) > BUF_SIZE - strlen(fmtLen))
+        {
+            break;
+        }
+        for (int i = 0; i < numInf; i++)
+        {
+            truncate(buffer[i]);
+        }
+    }
     snprintf(buffer, BUF_SIZE, INFORM_FMT, username, ipAddress, operatingSystem, macAddress)
 }
