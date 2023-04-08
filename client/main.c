@@ -145,7 +145,6 @@ int main(void)
     int port = strtol(serverPort, NULL, 0xA);
 
     strip(serverIp);
-    printf("%s:%i\n", serverIp, port);
     SOCKET clientSocket = createSocket(AF_INET, SOCK_STREAM, 0);
     if (clientSocket == INVALID_SOCKET)
     {
