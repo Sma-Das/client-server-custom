@@ -7,13 +7,13 @@
 #include "../utils/command.h"
 #include "../utils/encryption.h"
 #include "../utils/logging.h"
-#include "../utils/clientFunctions.h"
+#include "../utils/processes.h"
+#include "../utils/information.h"
 
-char *getInformation(char *URL);
-char *downloadFile(char *URL);
-char *uploadFile(char *URL);
+void downloadFile(char buffer[BUF_SIZE], char *URL);
+void uploadFile(char buffer[BUF_SIZE], char *URL);
 
-typedef char *(*commandFunction)(char *URL);
+typedef void (*commandFunction)(char buffer[BUF_SIZE], char *URL);
 
 typedef struct
 {
