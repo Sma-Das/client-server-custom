@@ -19,7 +19,7 @@ void getMacAddress(char buffer[BUF_SIZE])
 
     if (pAdapterInfo == NULL)
     {
-        printf("Error allocating memory needed to call GetAdaptersInfo\n");
+        printf("[E] Error allocating memory needed to call GetAdaptersInfo\n");
         return;
     }
 
@@ -29,13 +29,7 @@ void getMacAddress(char buffer[BUF_SIZE])
         pAdapterInfo = (PIP_ADAPTER_INFO)malloc(ulOutBufLen);
         if (pAdapterInfo == NULL)
         {
-            printf("Error allocating memory needed to call GetAdaptersInfo\n");
-            return;
-        }
-        if (GetAdaptersInfo(pAdapterInfo, &ulOutBufLen) != NO_ERROR)
-        {
-            printf("Error calling GetAdaptersInfo\n");
-            free(pAdapterInfo);
+            printf("[E] Error allocating memory needed to call GetAdaptersInfo\n");
             return;
         }
     }
@@ -43,14 +37,8 @@ void getMacAddress(char buffer[BUF_SIZE])
     PIP_ADAPTER_INFO pAdapter = pAdapterInfo;
     while (pAdapter)
     {
-        if (pAdapter->Type == MIB_IF_TYPE_ETHERNET)
-        {
-            snprintf(buffer, BUF_SIZE, "%02X:%02X:%02X:%02X:%02X:%02X",
-                     pAdapter->Address[0], pAdapter->Address[1], pAdapter->Address[2],
-                     pAdapter->Address[3], pAdapter->Address[4], pAdapter->Address[5]);
-            break;
-        }
-        pAdapter = pAdapter->Next;
+        printf("[E] Error calling GetAdaptersInfo\n");
+        return;
     }
 
     free(pAdapterInfo);
@@ -61,19 +49,19 @@ void getIpAddress(char buffer[BUF_SIZE])
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
     {
-        printf("Error initializing Winsock\n");
+        printf("[E] Error initializing Winsock\n");
         return;
     }
     char hostname[256];
     if (gethostname(hostname, sizeof(hostname)) == SOCKET_ERROR)
     {
-        printf("Error retrieving hostname\n");
+        printf("[E] Error retrieving hostname\n");
         return;
     }
     struct hostent *host;
     if ((host = gethostbyname(hostname)) == NULL)
     {
-        printf("Error retrieving host information\n");
+        printf("[E] Error retrieving host information\n");
         return;
     }
     struct in_addr **addr_list;
@@ -82,55 +70,50 @@ void getIpAddress(char buffer[BUF_SIZE])
     WSACleanup();
 }
 
-void getOperatingSystem(char buffer[BUF_SIZE])
+char *parseVersion(DWORD major, DWORD minor)
 {
-    DWORD dwVersion = 0;
-    DWORD dwMajorVersion = 0;
-    DWORD dwMinorVersion = 0;
-    DWORD dwBuild = 0;
-    dwVersion = GetVersion();
-    dwMajorVersion = (DWORD)(LOBYTE(LOWORD(dwVersion)));
-    dwMinorVersion = (DWORD)(HIBYTE(LOWORD(dwVersion)));
-    if (dwVersion < 0x80000000)
-    {
-        dwBuild = (DWORD)(HIWORD(dwVersion));
-    }
-    snprintf(buffer, BUZ_SIZE, "Operating System: ");
-
-    int remainingBuf = BUF_SIZE - strlen(buffer);
-    char tempBuf[remainingBuf];
-    switch (dwMajorVersion)
+    switch (major)
     {
     case 10:
-        if (dwMinorVersion == 0)
-            sprintf(tempBuf, "Windows 10");
+        if (minor == 0)
+            return "Windows 10";
+        else
+            return "Unknown";
         break;
     case 6:
-        switch (dwMinorVersion)
+        switch (minor)
         {
         case 3:
-            snprintf(tempBuf, remainingSize, "Windows 8.1");
+            return "Windows 8.1";
             break;
         case 2:
-            snprintf(tempBuf, remainingSize, "Windows 8");
+            return "Windows 8";
             break;
         case 1:
-            snprintf(tempBuf, remainingSize, "Windows 7");
+            return "Windows 7";
             break;
         case 0:
-            snprintf(tempBuf, remainingSize, "Windows Vista");
+            return "Windows Vista";
+            break;
+        default:
+            return "Unknown";
             break;
         }
         break;
     case 5:
-        if (dwMinorVersion == 1)
-            snprintf(tempBuf, remainingSize, "Windows XP");
+        if (minor == 1)
+            return "Windows XP";
         break;
     default:
-        snprintf(tempBuf, remainingSize, "Unknown");
+        return "Unknown";
         break;
     }
-    snprintf(buffer + BUF_SIZE - remainingBuf, BUF_SIZE - remainingBuf, tempBuf);
+}
+
+void getOperatingSystem(char buffer[BUF_SIZE])
+{
+    DWORD dwVersion = GetVersion();
+    snprintf(buffer, BUF_SIZE, "Operating System: %s", parseVersion((DWORD)(LOBYTE(LOWORD(dwVersion)))(DWORD)(HIBYTE(LOWORD(dwVersion)))));
 }
 
 void getUsername(char buffer[BUF_SIZE])
