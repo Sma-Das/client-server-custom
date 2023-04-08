@@ -46,17 +46,13 @@ int initializeClientSocket(SOCKET *clientSocket, const char *serverIp, int serve
     return 0;
 }
 
-char *getInformation(char *URL)
+void uploadFile(char buffer[BUF_SIZE], char *URL)
 {
-    return "Information";
+    snprintf(buffer, BUF_SIZE, URL);
 }
-char *uploadFile(char *URL)
+void downloadFile(char buffer[BUF_SIZE], char *URL)
 {
-    return URL;
-}
-char *downloadFile(char *URL)
-{
-    return URL;
+    snprintf(buffer, BUF_SIZE, URL);
 }
 
 int fetchData(SOCKET *socket, char buffer[BUF_SIZE])
