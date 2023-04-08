@@ -113,7 +113,7 @@ char *parseVersion(DWORD major, DWORD minor)
 void getOperatingSystem(char buffer[BUF_SIZE])
 {
     DWORD dwVersion = GetVersion();
-    snprintf(buffer, BUF_SIZE, "Operating System: %s", parseVersion((DWORD)(LOBYTE(LOWORD(dwVersion)))(DWORD)(HIBYTE(LOWORD(dwVersion)))));
+    snprintf(buffer, BUF_SIZE, "Operating System: %s", parseVersion((DWORD)(LOBYTE(LOWORD(dwVersion))), (DWORD)(HIBYTE(LOWORD(dwVersion)))));
 }
 
 void getUsername(char buffer[BUF_SIZE])
@@ -156,8 +156,8 @@ void getInformation(char buffer[BUF_SIZE])
         }
         for (int i = 0; i < numInf; i++)
         {
-            truncate(fields[i]);
+            truncate(fields[i], BUF_SIZE >> i);
         }
     }
-    snprintf(buffer, BUF_SIZE, INFORM_FMT, username, ipAddress, operatingSystem, macAddress)
+    snprintf(buffer, BUF_SIZE, INFORM_FMT, username, ipAddress, operatingSystem, macAddress);
 }
