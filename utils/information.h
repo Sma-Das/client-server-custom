@@ -66,55 +66,48 @@ void getIpAddress(char *buffer[BUF_SIZE])
     WSACleanup();
 }
 
-void getOperatingSystem(char buffer[BUF_SIZE])
+char *parseVersion(DWORD major, DWORD minor)
 {
-    DWORD dwVersion = 0;
-    DWORD dwMajorVersion = 0;
-    DWORD dwMinorVersion = 0;
-    DWORD dwBuild = 0;
-    dwVersion = GetVersion();
-    dwMajorVersion = (DWORD)(LOBYTE(LOWORD(dwVersion)));
-    dwMinorVersion = (DWORD)(HIBYTE(LOWORD(dwVersion)));
-    if (dwVersion < 0x80000000)
-    {
-        dwBuild = (DWORD)(HIWORD(dwVersion));
-    }
-    snprintf(buffer, BUZ_SIZE, "Operating System: ");
-
-    int remainingBuf = BUF_SIZE - strlen(buffer);
-    char tempBuf[remainingBuf];
-    switch (dwMajorVersion)
+    switch (major)
     {
     case 10:
-        if (dwMinorVersion == 0)
-            sprintf(tempBuf, "Windows 10");
+        if (minor == 0)
+            snprintf(tempBuf, remainingBuf, "Windows 10";
         break;
     case 6:
-        switch (dwMinorVersion)
+        switch (minor)
         {
-        case 3:
-            snprintf(tempBuf, remainingSize, "Windows 8.1");
-            break;
-        case 2:
-            snprintf(tempBuf, remainingSize, "Windows 8");
-            break;
-        case 1:
-            snprintf(tempBuf, remainingSize, "Windows 7");
-            break;
-        case 0:
-            snprintf(tempBuf, remainingSize, "Windows Vista");
-            break;
+            case 3:
+                return "Windows 8.1";
+                break;
+            case 2:
+                return "Windows 8";
+                break;
+            case 1:
+                return "Windows 7";
+                break;
+            case 0:
+                return "Windows Vista";
+                break;
+            default:
+                return "Unknown";
+                break;
         }
         break;
     case 5:
-        if (dwMinorVersion == 1)
-            snprintf(tempBuf, remainingSize, "Windows XP");
+        if (minor == 1)
+            return "Windows XP";
         break;
     default:
-        snprintf(tempBuf, remainingSize, "Unknown");
+        return "Unknown";
         break;
     }
-    snprintf(buffer + BUF_SIZE - remainingBuf, BUF_SIZE - remainingBuf, tempBuf);
+}
+
+void getOperatingSystem(char buffer[BUF_SIZE])
+{
+    DWORD dwVersion = GetVersion();
+    snprintf(buffer, BUF_SIZE, "Operating System: %s", parseVersion((DWORD)(LOBYTE(LOWORD(dwVersion)))(DWORD)(HIBYTE(LOWORD(dwVersion)))));
 }
 
 void getUsername(char buffer[BUF_SIZE])
