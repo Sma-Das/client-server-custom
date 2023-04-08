@@ -14,51 +14,67 @@ const int fmtLen = strlen(INFORM_FMT);
 
 void getMacAddress(char buffer[BUF_SIZE])
 {
-    // Retrieve the MAC address
-    pAdapterInfo = (IP_ADAPTER_INFO *)malloc(sizeof(IP_ADAPTER_INFO));
+    ULONG ulOutBufLen = sizeof(IP_ADAPTER_INFO);
+    PIP_ADAPTER_INFO pAdapterInfo = (PIP_ADAPTER_INFO)malloc(ulOutBufLen);
+
     if (pAdapterInfo == NULL)
     {
         printf("Error allocating memory needed to call GetAdaptersInfo\n");
-        return 1;
+        return;
     }
+
     if (GetAdaptersInfo(pAdapterInfo, &ulOutBufLen) == ERROR_BUFFER_OVERFLOW)
     {
         free(pAdapterInfo);
-        pAdapterInfo = (IP_ADAPTER_INFO *)malloc(ulOutBufLen);
+        pAdapterInfo = (PIP_ADAPTER_INFO)malloc(ulOutBufLen);
         if (pAdapterInfo == NULL)
         {
             printf("Error allocating memory needed to call GetAdaptersInfo\n");
-            return 1;
+            return;
+        }
+        if (GetAdaptersInfo(pAdapterInfo, &ulOutBufLen) != NO_ERROR)
+        {
+            printf("Error calling GetAdaptersInfo\n");
+            free(pAdapterInfo);
+            return;
         }
     }
-    if ((dwRetVal = GetAdaptersInfo(pAdapterInfo, &ulOutBufLen)) != NO_ERROR)
+
+    PIP_ADAPTER_INFO pAdapter = pAdapterInfo;
+    while (pAdapter)
     {
-        printf("Error calling GetAdaptersInfo\n");
-        return 1;
+        if (pAdapter->Type == MIB_IF_TYPE_ETHERNET)
+        {
+            snprintf(buffer, BUF_SIZE, "%02X:%02X:%02X:%02X:%02X:%02X",
+                     pAdapter->Address[0], pAdapter->Address[1], pAdapter->Address[2],
+                     pAdapter->Address[3], pAdapter->Address[4], pAdapter->Address[5]);
+            break;
+        }
+        pAdapter = pAdapter->Next;
     }
-    snprintf(buffer, BUF_SIZE, "MAC Address: %02X:%02X:%02X:%02X:%02X:%02X\n", pAdapterInfo->Address[0], pAdapterInfo->Address[1], pAdapterInfo->Address[2], pAdapterInfo->Address[3], pAdapterInfo->Address[4], pAdapterInfo->Address[5]);
+
     free(pAdapterInfo);
 }
 
-void getIpAddress(char *buffer[BUF_SIZE])
+void getIpAddress(char buffer[BUF_SIZE])
 {
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
     {
         printf("Error initializing Winsock\n");
-        return 1;
+        return;
     }
     char hostname[256];
     if (gethostname(hostname, sizeof(hostname)) == SOCKET_ERROR)
     {
         printf("Error retrieving hostname\n");
-        return 1;
+        return;
     }
     struct hostent *host;
     if ((host = gethostbyname(hostname)) == NULL)
     {
         printf("Error retrieving host information\n");
-        return 1;
+        return;
     }
     struct in_addr **addr_list;
     addr_list = (struct in_addr **)host->h_addr_list;
@@ -148,16 +164,16 @@ void getInformation(char buffer[BUF_SIZE])
     getMacAddress(macAddress);
 
     int numInf = 4;
-    char *buffer[numInf] = {username, ipAddress, operatingSystem, macAddress};
+    char *fields[numInf] = {username, ipAddress, operatingSystem, macAddress};
     while (TRUE)
     {
-        if (!getTotalSize(buffer, numInf) > BUF_SIZE - strlen(fmtLen))
+        if (!getTotalSize(fields, numInf) > BUF_SIZE - fmtLen)
         {
             break;
         }
         for (int i = 0; i < numInf; i++)
         {
-            truncate(buffer[i]);
+            truncate(fields[i]);
         }
     }
     snprintf(buffer, BUF_SIZE, INFORM_FMT, username, ipAddress, operatingSystem, macAddress)
