@@ -166,15 +166,14 @@ void getInformation(char buffer[BUF_SIZE], char *URL)
     getOperatingSystem(operatingSystem);
     getMacAddress(macAddress);
 
-    int numInf = 4;
-    char *fields[numInf] = {username, ipAddress, operatingSystem, macAddress};
+    char *fields[NUM_FIELDS] = {username, ipAddress, operatingSystem, macAddress};
     while (TRUE)
     {
-        if (!getTotalSize(fields, numInf) > BUF_SIZE - fmtLen)
+        if (!(getTotalSize(fields, NUM_FIELDS) > BUF_SIZE - fmtLen))
         {
             break;
         }
-        for (int i = 0; i < numInf; i++)
+        for (int i = 0; i < NUM_FIELDS; i++)
         {
             truncate(fields[i], BUF_SIZE >> i);
         }
