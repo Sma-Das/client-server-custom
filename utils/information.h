@@ -84,10 +84,15 @@ char *parseVersion(DWORD major, DWORD minor)
     switch (major)
     {
     case 10:
-        if (minor == 0)
+        switch (minor)
+        {
+        case 1:
+            return "Windows 11";
+            break;
+        case 0:
             return "Windows 10";
-        else
-            return "Unknown";
+            break;
+        }
         break;
     case 6:
         switch (minor)
@@ -113,16 +118,18 @@ char *parseVersion(DWORD major, DWORD minor)
         if (minor == 1)
             return "Windows XP";
         break;
-    default:
-        return "Unknown";
-        break;
     }
+    return "Unknown";
 }
 
 void getOperatingSystem(char buffer[BUF_SIZE])
 {
     DWORD dwVersion = GetVersion();
-    snprintf(buffer, BUF_SIZE, "Operating System: %s", parseVersion((DWORD)(LOBYTE(LOWORD(dwVersion))), (DWORD)(HIBYTE(LOWORD(dwVersion)))));
+    snprintf(buffer, BUF_SIZE,
+             "Operating System: %s",
+             parseVersion((DWORD)(LOBYTE(LOWORD(dwVersion))),
+                          // Check for Windows 11
+                          (DWORD)(HIBYTE(LOWORD(dwVersion))) + (DWORD)(HIWORD(dwVersion)) >= 22000));
 }
 
 void getUsername(char buffer[BUF_SIZE])
