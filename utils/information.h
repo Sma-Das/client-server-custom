@@ -21,7 +21,7 @@ void getMacAddress(char buffer[BUF_SIZE])
 
     if (pAdapterInfo == NULL)
     {
-        printf("[E] Error allocating memory needed to call GetAdaptersInfo\n");
+        printf("Error allocating memory needed to call GetAdaptersInfo\n");
         return;
     }
 
@@ -31,17 +31,24 @@ void getMacAddress(char buffer[BUF_SIZE])
         pAdapterInfo = (PIP_ADAPTER_INFO)malloc(ulOutBufLen);
         if (pAdapterInfo == NULL)
         {
-            printf("[E] Error allocating memory needed to call GetAdaptersInfo\n");
+            printf("Error allocating memory needed to call GetAdaptersInfo\n");
+            return;
+        }
+        if (GetAdaptersInfo(pAdapterInfo, &ulOutBufLen) != NO_ERROR)
+        {
+            printf("Error calling GetAdaptersInfo\n");
+            free(pAdapterInfo);
             return;
         }
     }
-
     PIP_ADAPTER_INFO pAdapter = pAdapterInfo;
-    while (pAdapter)
+    while (pAdapter->Type != MIB_IF_TYPE_ETHERNET)
     {
-        printf("[E] Error calling GetAdaptersInfo\n");
-        return;
+        pAdapter = pAdapter->Next;
     }
+    snprintf(buffer, BUF_SIZE, "Mac Address: %02X:%02X:%02X:%02X:%02X:%02X",
+             pAdapter->Address[0], pAdapter->Address[1], pAdapter->Address[2],
+             pAdapter->Address[3], pAdapter->Address[4], pAdapter->Address[5]);
 
     free(pAdapterInfo);
 }
@@ -68,7 +75,7 @@ void getIpAddress(char buffer[BUF_SIZE])
     }
     struct in_addr **addr_list;
     addr_list = (struct in_addr **)host->h_addr_list;
-    snprintf(buffer, BUF_SIZE, "IP Address: %s\n", inet_ntoa(*addr_list[0]));
+    snprintf(buffer, BUF_SIZE, "IP Address: %s", inet_ntoa(*addr_list[0]));
     WSACleanup();
 }
 
