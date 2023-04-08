@@ -62,11 +62,13 @@ int fetchData(SOCKET *socket, char buffer[BUF_SIZE])
 
 char *commandHandler(char *commandName, char *URL)
 {
+    static char buffer[BUF_SIZE];
     for (int i = 0; i < NUM_COMMANDS - 1; i++)
     {
         if (strcmp(commandName, commandMapping[i].commandName) == 0)
         {
-            return commandMapping[i].action(URL);
+            commandMapping[i].action(buffer, URL);
+            return buffer;
         }
     }
     return NULL;
