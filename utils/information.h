@@ -5,10 +5,12 @@
 #include <iphlpapi.h>
 #include <lmcons.h>
 #include <lm.h>
+#include <windows.h>
 
 #include "config.h"
 
 #define INFORM_FMT "%s\n%s\n%s\n%s\n"
+#define NUM_FIELDS 4
 
 const int fmtLen = strlen(INFORM_FMT);
 
