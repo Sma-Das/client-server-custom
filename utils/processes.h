@@ -5,22 +5,21 @@
 
 #include "config.h"
 
-char *getProcesses(char *URL)
+void getProcesses(char buffer[BUF_SIZE], char *URL)
 {
     DWORD processIds[128];
     DWORD bytesReturned;
     if (!EnumProcesses(processIds, sizeof(processIds), &bytesReturned))
     {
-        fprintf(stderr, "Error: EnumProcesses failed with error %lu\n", GetLastError());
-        return NULL;
+        fprintf(stderr, "[E] Error: EnumProcesses failed with error %lu\n", GetLastError());
+        return;
     }
     int count = bytesReturned / sizeof(DWORD);
 
-    char *buffer = (char *)malloc(BUF_SIZE);
     if (buffer == NULL)
     {
-        fprintf(stderr, "Error: Out of memory\n");
-        return NULL;
+        fprintf(stderr, "[E] Error: Out of memory\n");
+        return;
     }
     buffer[0] = '\0';
 
@@ -42,6 +41,4 @@ char *getProcesses(char *URL)
             CloseHandle(processHandle);
         }
     }
-
-    return buffer;
 }
