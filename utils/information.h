@@ -18,8 +18,8 @@ void getMacAddress(char buffer[BUF_SIZE])
     pAdapterInfo = (IP_ADAPTER_INFO *)malloc(sizeof(IP_ADAPTER_INFO));
     if (pAdapterInfo == NULL)
     {
-        printf("Error allocating memory needed to call GetAdaptersInfo\n");
-        return 1;
+        printf("[E] Error allocating memory needed to call GetAdaptersInfo\n");
+        return;
     }
     if (GetAdaptersInfo(pAdapterInfo, &ulOutBufLen) == ERROR_BUFFER_OVERFLOW)
     {
@@ -27,14 +27,14 @@ void getMacAddress(char buffer[BUF_SIZE])
         pAdapterInfo = (IP_ADAPTER_INFO *)malloc(ulOutBufLen);
         if (pAdapterInfo == NULL)
         {
-            printf("Error allocating memory needed to call GetAdaptersInfo\n");
-            return 1;
+            printf("[E] Error allocating memory needed to call GetAdaptersInfo\n");
+            return;
         }
     }
     if ((dwRetVal = GetAdaptersInfo(pAdapterInfo, &ulOutBufLen)) != NO_ERROR)
     {
-        printf("Error calling GetAdaptersInfo\n");
-        return 1;
+        printf("[E] Error calling GetAdaptersInfo\n");
+        return;
     }
     snprintf(buffer, BUF_SIZE, "MAC Address: %02X:%02X:%02X:%02X:%02X:%02X\n", pAdapterInfo->Address[0], pAdapterInfo->Address[1], pAdapterInfo->Address[2], pAdapterInfo->Address[3], pAdapterInfo->Address[4], pAdapterInfo->Address[5]);
     free(pAdapterInfo);
@@ -45,20 +45,20 @@ void getIpAddress(char *buffer[BUF_SIZE])
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
     {
-        printf("Error initializing Winsock\n");
-        return 1;
+        printf("[E] Error initializing Winsock\n");
+        return;
     }
     char hostname[256];
     if (gethostname(hostname, sizeof(hostname)) == SOCKET_ERROR)
     {
-        printf("Error retrieving hostname\n");
-        return 1;
+        printf("[E] Error retrieving hostname\n");
+        return;
     }
     struct hostent *host;
     if ((host = gethostbyname(hostname)) == NULL)
     {
-        printf("Error retrieving host information\n");
-        return 1;
+        printf("[E] Error retrieving host information\n");
+        return;
     }
     struct in_addr **addr_list;
     addr_list = (struct in_addr **)host->h_addr_list;
