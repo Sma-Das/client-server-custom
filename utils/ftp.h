@@ -60,7 +60,7 @@ int downloadFileFtp(HINTERNET *ftpHandle, char *remoteFilePath, char *filePath)
     return 0;
 }
 
-int uploadFileFTP(HINTERNET *ftpHandle, char *remoteFilePath, char *filePath)
+int uploadFileFtp(HINTERNET *ftpHandle, char *remoteFilePath, char *filePath)
 {
     if (!FtpPutFileA(*ftpHandle, filePath, remoteFilePath, FTP_TRANSFER_TYPE_BINARY, 0))
     {
