@@ -69,6 +69,7 @@ void downloadFile(char buffer[BUF_SIZE], char *URL)
     if (!(getTempDir(filePath, &pathLen)))
     {
         snprintf(buffer, BUF_SIZE, FTP_ERR_FMT, 1, URL);
+        return;
     }
 
     // Append the file name to the path of the local temporary directory.
@@ -81,15 +82,11 @@ void downloadFile(char buffer[BUF_SIZE], char *URL)
     if (!ftpHandle)
     {
         snprintf(buffer, BUF_SIZE, FTP_ERR_FMT, 2, URL);
+        return;
     }
-
-    // Download the file from the given URL and store it in the local temporary directory.
-    int result = downloadFileFtp(&ftpHandle, URL, filePath);
-
-    // Check if the download was successful.
-    if (result != 0)
+    else if (downloadFileFtp(&ftpHandle, URL, filePath) != 0)
     {
-        snprintf(buffer, BUF_SIZE, FTP_ERR_FMT, result + 2, URL);
+        snprintf(buffer, BUF_SIZE, FTP_ERR_FMT, 3, URL);
     }
     else
     {
@@ -139,7 +136,7 @@ void serverHandler(SOCKET socket)
         {
             break;
         }
-        buffer[bytesReceived] = '\0';
+        buffer[bytesReceived] = CF_NULL;
         parseCommand(buffer, &command, &expectedBuffer, NULL, FALSE);
         char *commandName = decodeCommand(command);
         if (expectedBuffer > 0)
@@ -149,14 +146,14 @@ void serverHandler(SOCKET socket)
             {
                 break;
             }
-            buffer[bytesReceived] = '\0';
+            buffer[bytesReceived] = CF_NULL;
             parseCommand(buffer, &command, &expectedBuffer, URL, TRUE);
             printf("[%s] Received %s [%s]\n", getCurrTime(), commandName, URL);
         }
         else
         {
             printf("[%s] Received %s\n", getCurrTime(), commandName);
-            URL[0] = '\0';
+            URL[0] = CF_NULL;
         }
         if (strcmp(commandName, QUIT) == 0)
         {

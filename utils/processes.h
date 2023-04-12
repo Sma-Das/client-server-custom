@@ -21,7 +21,7 @@ void getProcesses(char buffer[BUF_SIZE], char *URL)
         fprintf(stderr, "[E] Error: Out of memory\n");
         return;
     }
-    buffer[0] = '\0';
+    buffer[0] = CF_NULL;
 
     for (int i = 0; i < count; i++)
     {
