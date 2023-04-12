@@ -43,7 +43,7 @@ UINT4 generateKey(COMMAND commandCode, UINT4 seed)
 
 void splice(char *buffer, int bufferSize)
 {
-    for (int i = 0; i < bufferSize - 1; i++)
+    for (int i = 0; i < bufferSize; i++)
     {
         char temp = buffer[i];
         temp = (temp & LR_MASK) | (temp & LL_MASK) | (temp & RR_MASK) | (temp & RL_MASK);
@@ -55,7 +55,7 @@ void splice(char *buffer, int bufferSize)
 
 void unsplice(char *buffer, int bufferSize)
 {
-    for (int i = 0; i < bufferSize - 1; i++)
+    for (int i = 0; i < bufferSize; i++)
     {
         char temp = buffer[i];
         temp = (temp & R_MASK) | (temp & L_MASK);
