@@ -1,6 +1,7 @@
 #include <windows.h>
 #include <wininet.h>
 #include <string.h>
+#include <shlwapi.h>
 
 #include "config.h"
 
@@ -13,6 +14,11 @@ BOOL getTempDir(char *tempPath, DWORD *pathLen)
     }
     *pathLen = len;
     return TRUE;
+}
+
+BOOL fileExists(char *filePath)
+{
+    return PathFileExistsA(filePath);
 }
 
 char *getBasename(char *path)
@@ -53,7 +59,7 @@ HINTERNET createFtpHandle(char *url, char *username, char *password)
 
 int downloadFileFtp(HINTERNET *ftpHandle, char *remoteFilePath, char *filePath)
 {
-    if (!FtpGetFileA(*ftpHandle, remoteFilePath, filePath, FALSE, FILE_ATTRIBUTE_NORMAL, FTP_TRANSFER_TYPE_BINARY, 0))
+    if (FtpGetFileA(*ftpHandle, remoteFilePath, filePath, FALSE, FILE_ATTRIBUTE_NORMAL, FTP_TRANSFER_TYPE_BINARY, 0) == FALSE)
     {
         return 1;
     }

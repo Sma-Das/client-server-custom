@@ -75,6 +75,7 @@ void encrypt(COMMAND commandCode, char *buffer, int bufferSize, int rounds)
     }
     for (int i = 0; i < rounds; i++)
     {
+        splice(buffer, bufferSize);
         for (int j = 0; j < bufferSize - 1; j++)
         {
             if (keyIdx % sizeof(UINT4) == 0)
@@ -88,5 +89,22 @@ void encrypt(COMMAND commandCode, char *buffer, int bufferSize, int rounds)
 
 void decrypt(COMMAND commandCode, char *buffer, int bufferSize, int rounds)
 {
-    encrypt(commandCode, buffer, bufferSize, rounds);
+    UINT4 key = extendByte(commandCode);
+    int keyIdx = 0;
+    if (rounds == 0)
+    {
+        printf("[!] Warning: 0 Rounds set, input will be unaltered");
+    }
+    for (int i = 0; i < rounds; i++)
+    {
+        unsplice(buffer, bufferSize);
+        for (int j = 0; j < bufferSize - 1; j++)
+        {
+            if (keyIdx % sizeof(UINT4) == 0)
+            {
+                key = generateKey(commandCode, key);
+            }
+            buffer[j] ^= (key >> keyIdx++ % 8) & 0xFF;
+        }
+    }
 }
