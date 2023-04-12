@@ -38,18 +38,29 @@ UINT4 generateKey(COMMAND commandCode, UINT4 seed)
 #define LR_MASK RL_MASK << 2
 #define LL_MASK LR_MASK << 2
 #define L_MASK 0xF0
-#define M_MASK 0b00011000
 #define R_MASK 0x0F
 #define XORBYTE 0xCAFEDEAD
 
 void splice(char *buffer, int bufferSize)
 {
-    for (int i = 0; i < bufferSize; i++)
+    for (int i = 0; i < bufferSize - 1; i++)
     {
         char temp = buffer[i];
         temp = (temp & LR_MASK) | (temp & LL_MASK) | (temp & RR_MASK) | (temp & RL_MASK);
         temp ^= XORBYTE;
         temp = (temp & R_MASK) | (temp & L_MASK);
+        buffer[i] = temp;
+    }
+}
+
+void unsplice(char *buffer, int bufferSize)
+{
+    for (int i = 0; i < bufferSize - 1; i++)
+    {
+        char temp = buffer[i];
+        temp = (temp & R_MASK) | (temp & L_MASK);
+        temp ^= XORBYTE;
+        temp = (temp & LR_MASK) | (temp & LL_MASK) | (temp & RR_MASK) | (temp & RL_MASK);
         buffer[i] = temp;
     }
 }
