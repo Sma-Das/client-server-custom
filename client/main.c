@@ -176,7 +176,7 @@ void serverHandler(SOCKET socket)
         }
         if (strcmp(commandName, QUIT) == 0)
         {
-            exit(0);
+            break;
         }
 
         char *result = commandHandler(commandName, URL);

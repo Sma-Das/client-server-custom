@@ -47,8 +47,9 @@ void splice(char *buffer, int bufferSize)
     {
         char temp = buffer[i];
         temp = (temp & LR_MASK) | (temp & LL_MASK) | (temp & RR_MASK) | (temp & RL_MASK);
-        temp ^= XORBYTE;
+        temp ^= (XORBYTE >> (8 * (i % 4)));
         temp = (temp & R_MASK) | (temp & L_MASK);
+        temp = (temp & LL_MASK) | (temp & RL_MASK) | (temp & LR_MASK) | (temp & RR_MASK);
         buffer[i] = temp;
     }
 }
@@ -59,11 +60,19 @@ void unsplice(char *buffer, int bufferSize)
     {
         char temp = buffer[i];
         temp = (temp & R_MASK) | (temp & L_MASK);
-        temp ^= XORBYTE;
+        temp ^= (XORBYTE >> (8 * (i % 4)));
         temp = (temp & LR_MASK) | (temp & LL_MASK) | (temp & RR_MASK) | (temp & RL_MASK);
         buffer[i] = temp;
     }
 }
+
+#undef RR_MASK
+#undef RL_MASK
+#undef LR_MASK
+#undef LL_MASK
+#undef L_MASK 
+#undef R_MASK 
+#undef XORBYTE
 
 void encrypt(COMMAND commandCode, char *buffer, int bufferSize, int rounds)
 {
@@ -97,7 +106,6 @@ void decrypt(COMMAND commandCode, char *buffer, int bufferSize, int rounds)
     }
     for (int i = 0; i < rounds; i++)
     {
-        unsplice(buffer, bufferSize);
         for (int j = 0; j < bufferSize - 1; j++)
         {
             if (keyIdx % sizeof(UINT4) == 0)
@@ -106,5 +114,6 @@ void decrypt(COMMAND commandCode, char *buffer, int bufferSize, int rounds)
             }
             buffer[j] ^= (key >> keyIdx++ % 8) & 0xFF;
         }
+        unsplice(buffer, bufferSize);
     }
 }
