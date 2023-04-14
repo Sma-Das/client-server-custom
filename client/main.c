@@ -11,7 +11,8 @@
 #include "../utils/information.h"
 #include "../utils/ftp.h"
 
-#define FTP_ERR_FMT "[!][%i] Could not download %s"
+#define FTP_ERR_DWL "[!][%i] Could not download %s"
+#define FTP_ERR_UPL "[!][%i] Could not upload %s"
 
 void downloadFile(char buffer[BUF_SIZE], char *URL);
 void uploadFile(char buffer[BUF_SIZE], char *URL);
@@ -49,9 +50,35 @@ int initializeClientSocket(SOCKET *clientSocket, const char *serverIp, int serve
     return 0;
 }
 
+/**
+ * Uploads a file from the system to a given URL
+ * @param buffer Character array to store the success or error message.
+ * @param URL The URL of the file to upload to.
+ */
 void uploadFile(char buffer[BUF_SIZE], char *URL)
 {
-    snprintf(buffer, BUF_SIZE, URL);
+    char filePath[BUF_SIZE];
+
+    // Append the file name to the path of the local temporary directory.
+    snprintf(filePath, BUF_SIZE, FTP_DWL_DIR, getBasename(URL));
+
+    // Create a handle for the FTP server.
+    HINTERNET ftpHandle = createFtpHandle(FTP_SERVER, FTP_USER, FTP_PASS);
+
+    // Check if the handle creation was successful.
+    if (!ftpHandle)
+    {
+        snprintf(buffer, BUF_SIZE, FTP_ERR_UPL, 2, URL);
+        return;
+    }
+    else if (uploadFileFtp(&ftpHandle, URL, filePath) != 0)
+    {
+        snprintf(buffer, BUF_SIZE, FTP_ERR_UPL, 3, URL);
+    }
+    else
+    {
+        snprintf(buffer, BUF_SIZE, "[i] Successfully uploaded file into %s\n", filePath);
+    }
 }
 
 /**
@@ -63,17 +90,9 @@ void downloadFile(char buffer[BUF_SIZE], char *URL)
 {
     // Create a character array to hold the path to the local temporary directory.
     char filePath[BUF_SIZE];
-    DWORD pathLen;
-
-    // Get the path to the local temporary directory.
-    if (!(getTempDir(filePath, &pathLen)))
-    {
-        snprintf(buffer, BUF_SIZE, FTP_ERR_FMT, 1, URL);
-        return;
-    }
 
     // Append the file name to the path of the local temporary directory.
-    snprintf(filePath + strlen(filePath), BUF_SIZE - strlen(filePath), getBasename(URL));
+    snprintf(filePath, BUF_SIZE, getBasename(URL));
 
     // Create a handle for the FTP server.
     HINTERNET ftpHandle = createFtpHandle(FTP_SERVER, FTP_USER, FTP_PASS);
@@ -81,12 +100,12 @@ void downloadFile(char buffer[BUF_SIZE], char *URL)
     // Check if the handle creation was successful.
     if (!ftpHandle)
     {
-        snprintf(buffer, BUF_SIZE, FTP_ERR_FMT, 2, URL);
+        snprintf(buffer, BUF_SIZE, FTP_ERR_DWL, 2, URL);
         return;
     }
     else if (downloadFileFtp(&ftpHandle, URL, filePath) != 0)
     {
-        snprintf(buffer, BUF_SIZE, FTP_ERR_FMT, 3, URL);
+        snprintf(buffer, BUF_SIZE, FTP_ERR_DWL, 3, URL);
     }
     else
     {
@@ -165,6 +184,7 @@ void serverHandler(SOCKET socket)
         {
             getCurrTime(time);
             printf("[%s] Handle Error: %s\n", getCurrTime(), commandName);
+            continue;
         }
         strip(result);
         int bufLen = strlen(result);

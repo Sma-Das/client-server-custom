@@ -5,9 +5,13 @@
 
 #include "config.h"
 
+#define FTP_DWL_DIR "/%s"
+
 BOOL getTempDir(char *tempPath, DWORD *pathLen)
 {
-    DWORD len = GetTempPath(*pathLen, tempPath);
+    DWORD len = GetTempPathA(*pathLen, tempPath);
+    printf("%lu %lu\n", len, *pathLen);
+    printf("%s\n", tempPath);
     if (len > *pathLen)
     {
         return FALSE;
@@ -66,9 +70,9 @@ int downloadFileFtp(HINTERNET *ftpHandle, char *remoteFilePath, char *filePath)
     return 0;
 }
 
-int uploadFileFtp(HINTERNET *ftpHandle, char *remoteFilePath, char *filePath)
+int uploadFileFtp(HINTERNET *ftpHandle, char *localPath, char *remoteFilePath)
 {
-    if (!FtpPutFileA(*ftpHandle, filePath, remoteFilePath, FTP_TRANSFER_TYPE_BINARY, 0))
+    if (!FtpPutFileA(*ftpHandle, localPath, remoteFilePath, FTP_TRANSFER_TYPE_BINARY, 0))
     {
         return 1;
     }
