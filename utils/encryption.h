@@ -70,8 +70,8 @@ void unsplice(char *buffer, int bufferSize)
 #undef RL_MASK
 #undef LR_MASK
 #undef LL_MASK
-#undef L_MASK 
-#undef R_MASK 
+#undef L_MASK
+#undef R_MASK
 #undef XORBYTE
 
 void encrypt(COMMAND commandCode, char *buffer, int bufferSize, int rounds)
