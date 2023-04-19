@@ -14,6 +14,11 @@
 
 const int fmtLen = strlen(INFORM_FMT);
 
+/**
+ * Write the ETHERNET Mac Address into a given buffer
+ *
+ * @param buffer the buffer to write data into
+ */
 void getMacAddress(char buffer[BUF_SIZE])
 {
     ULONG ulOutBufLen = sizeof(IP_ADAPTER_INFO);
@@ -52,7 +57,11 @@ void getMacAddress(char buffer[BUF_SIZE])
 
     free(pAdapterInfo);
 }
-
+/**
+ * Write the IP address of the machine into the buffer
+ *
+ * @param buffer the buffer to write data into
+ */
 void getIpAddress(char buffer[BUF_SIZE])
 {
     WSADATA wsaData;
@@ -78,6 +87,17 @@ void getIpAddress(char buffer[BUF_SIZE])
     snprintf(buffer, BUF_SIZE, "IP Address: %s", inet_ntoa(*addr_list[0]));
     WSACleanup();
 }
+
+/**
+ * Parses the given major and minor version numbers and returns a string
+ * indicating the version of Windows that corresponds to those numbers.
+ *
+ * @param major The major version number of Windows.
+ * @param minor The minor version number of Windows.
+ *
+ * @return A string indicating the version of Windows that corresponds to the
+ *         given major and minor version numbers.
+ */
 
 char *parseVersion(DWORD major, DWORD minor)
 {
@@ -122,6 +142,11 @@ char *parseVersion(DWORD major, DWORD minor)
     return "Unknown";
 }
 
+/**
+ * Parse and return the string representation of Windows versionn this program is running on
+ *
+ * @param buffer The buffer to write the data into
+ */
 void getOperatingSystem(char buffer[BUF_SIZE])
 {
     DWORD dwVersion = GetVersion();
@@ -132,6 +157,11 @@ void getOperatingSystem(char buffer[BUF_SIZE])
                           (DWORD)(HIBYTE(LOWORD(dwVersion))) + (DWORD)(HIWORD(dwVersion)) >= 22000));
 }
 
+/**
+ * Fetch the username of the user who ran the program
+ *
+ * @param buffer The buffer to write data into
+ */
 void getUsername(char buffer[BUF_SIZE])
 {
     DWORD bufSize = BUF_SIZE;
@@ -152,12 +182,23 @@ int getTotalSize(char *buffer[], int size)
     }
     return totalSize;
 }
-
+/**
+ * Truncate a buffer by half
+ *
+ * @param buffer buffer to truncate
+ * @param bufferSize size of the current buffer
+ */
 void truncate(char *buffer, int bufferSize)
 {
     buffer[bufferSize / 2] = CF_NULL;
 }
 
+/**
+ * Return the Username, Mac Address, IP Address, and OS of the current machine and user
+ *
+ * @param buffer the buffer to write data into
+ * @param URL ignore this field
+ */
 void getInformation(char buffer[BUF_SIZE], char *URL)
 {
     char username[BUF_SIZE], ipAddress[BUF_SIZE], operatingSystem[BUF_SIZE], macAddress[BUF_SIZE];
