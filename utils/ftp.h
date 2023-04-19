@@ -6,6 +6,8 @@
 #include "config.h"
 
 #define FTP_DWL_DIR "/%s"
+#define FTP_ERR_DWL "[!][%i] Could not download %s"
+#define FTP_ERR_UPL "[!][%i] Could not upload %s"
 
 BOOL getTempDir(char *tempPath, DWORD *pathLen)
 {

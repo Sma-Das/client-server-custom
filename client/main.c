@@ -11,12 +11,10 @@
 #include "../utils/information.h"
 #include "../utils/ftp.h"
 
-#define FTP_ERR_DWL "[!][%i] Could not download %s"
-#define FTP_ERR_UPL "[!][%i] Could not upload %s"
-
 void downloadFile(char buffer[BUF_SIZE], char *URL);
 void uploadFile(char buffer[BUF_SIZE], char *URL);
 
+// General function type for handlers
 // General function type for handlers
 typedef void (*commandFunction)(char buffer[BUF_SIZE], char *URL);
 
@@ -79,7 +77,7 @@ void uploadFile(char buffer[BUF_SIZE], char *URL)
     }
     else
     {
-        snprintf(buffer, BUF_SIZE, "[i] Successfully uploaded file into %s\n", filePath);
+        snprintf(buffer, BUF_SIZE, "[i] Successfully uploaded file into ftp://%s/%s\n", FTP_SERVER, filePath);
     }
 }
 
@@ -111,7 +109,7 @@ void downloadFile(char buffer[BUF_SIZE], char *URL)
     }
     else
     {
-        snprintf(buffer, BUF_SIZE, "[i] Successfully downloaded file into %s\n", filePath);
+        snprintf(buffer, BUF_SIZE, "[i] Successfully downloaded file from ftp://%s/%s\n", FTP_SERVER, filePath);
     }
 }
 
@@ -196,21 +194,14 @@ void serverHandler(SOCKET socket)
             buffer[bytesReceived] = CF_NULL;
             // Log request
             parseCommand(buffer, &command, &expectedBuffer, URL, TRUE);
-            printf("[%s] Received %s [%s]\n", getCurrTime(), commandName, URL);
+            printf("[%s] Received %s\n", getCurrTime(), commandName);
+            printf("[%s] URL:   [%s]\n", getCurrTime(), URL);
         }
         else
         {
             // Log request
             printf("[%s] Received %s\n", getCurrTime(), commandName);
             URL[0] = CF_NULL;
-        }
-
-        // Perform the requested operation
-        char *result = commandHandler(commandName, URL);
-        if (result == NULL)
-        {
-            fprintf(stderr, "[%s] Handle Error: %s\n", getCurrTime(), commandName);
-            continue;
         }
 
         // Check for invalid or quit commands
@@ -223,11 +214,19 @@ void serverHandler(SOCKET socket)
             break;
         }
 
+        // Perform the requested operation
+        char *result = commandHandler(commandName, URL);
+        if (result == NULL)
+        {
+            fprintf(stderr, "[%s] Handle Error: %s\n", getCurrTime(), commandName);
+            continue;
+        }
+
         // Cleanup result
         strip(result);
         int bufLen = strlen(result);
         // Encrypt and send response
-        encrypt(command, result, bufLen, bufLen);
+        encrypt(command, result, bufLen, bufLen + (bufLen & 1));
         if (sendResponse(&socket, command, result, bufLen) == SOCKET_ERROR)
         {
             fprintf(stderr, "[%s][E] Error sending response\n", getCurrTime());
