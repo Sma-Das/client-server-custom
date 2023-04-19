@@ -28,6 +28,14 @@ typedef extern struct {
 } COMMAND;
 */
 
+/**
+ * Encode a command based on its index where the high bits is the negation of the index
+ * and the low bits are the index
+ *
+ * @param command Command from the command array: return INVALID otherwise
+ *
+ * @return one byte representation of the command
+ */
 COMMAND encodeCommand(char *command)
 {
     if (command == NULL)
@@ -45,6 +53,13 @@ COMMAND encodeCommand(char *command)
     return INVALID_COMMAND;
 }
 
+/**
+ * Check if a given commandCode is a special command
+ *
+ * @param commandCode single byte representation
+ *
+ * @return BOOL
+ */
 BOOLEAN isSpecial(COMMAND commandCode)
 {
     for (int i = 0; i < NUM_SPEC_CMD; i++)
@@ -57,6 +72,13 @@ BOOLEAN isSpecial(COMMAND commandCode)
     return FALSE;
 }
 
+/**
+ * Decode a given command code and verify that it was not currupted
+ *
+ * @param command representation of the command
+ *
+ * @return Command Name of the corresponding command else INVALID_COMMAND
+ */
 char *decodeCommand(COMMAND command)
 {
     int index = 0x0F & command;
@@ -73,6 +95,16 @@ char *decodeCommand(COMMAND command)
     return commands[index];
 }
 
+/**
+ * Parse a given buffer into its corresponding parts accounting for special fields
+ *
+ * @param buffer buffer to read from
+ * @param commandCode buffer to write into
+ * @param bufferSize buffer to write into
+ * @param URL buffer to write into
+ * @param special is it a special command
+ *
+ */
 void parseCommand(char *buffer, COMMAND *commandCode, int *bufferSize, char *URL, BOOLEAN special)
 {
     if (special)
