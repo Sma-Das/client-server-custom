@@ -26,7 +26,7 @@ void getMacAddress(char buffer[BUF_SIZE])
 
     if (pAdapterInfo == NULL)
     {
-        printf("Error allocating memory needed to call GetAdaptersInfo\n");
+        fprintf(stderr, "[E] Error allocating memory needed to call GetAdaptersInfo\n");
         return;
     }
 
@@ -36,12 +36,12 @@ void getMacAddress(char buffer[BUF_SIZE])
         pAdapterInfo = (PIP_ADAPTER_INFO)malloc(ulOutBufLen);
         if (pAdapterInfo == NULL)
         {
-            printf("Error allocating memory needed to call GetAdaptersInfo\n");
+            fprintf(stderr, "[E] Error allocating memory needed to call GetAdaptersInfo\n");
             return;
         }
         if (GetAdaptersInfo(pAdapterInfo, &ulOutBufLen) != NO_ERROR)
         {
-            printf("Error calling GetAdaptersInfo\n");
+            fprintf(stderr, "[E] Error calling GetAdaptersInfo\n");
             free(pAdapterInfo);
             return;
         }
@@ -67,19 +67,19 @@ void getIpAddress(char buffer[BUF_SIZE])
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
     {
-        printf("[E] Error initializing Winsock\n");
+        fprintf(stderr, "[E] Error initializing Winsock\n");
         return;
     }
     char hostname[256];
     if (gethostname(hostname, sizeof(hostname)) == SOCKET_ERROR)
     {
-        printf("[E] Error retrieving hostname\n");
+        fprintf(stderr, "[E] Error retrieving hostname\n");
         return;
     }
     struct hostent *host;
     if ((host = gethostbyname(hostname)) == NULL)
     {
-        printf("[E] Error retrieving host information\n");
+        fprintf(stderr, "[E] Error retrieving host information\n");
         return;
     }
     struct in_addr **addr_list;
