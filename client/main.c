@@ -11,9 +11,6 @@
 #include "../utils/information.h"
 #include "../utils/ftp.h"
 
-#define FTP_ERR_DWL "[!][%i] Could not download %s"
-#define FTP_ERR_UPL "[!][%i] Could not upload %s"
-
 void downloadFile(char buffer[BUF_SIZE], char *URL);
 void uploadFile(char buffer[BUF_SIZE], char *URL);
 
@@ -79,7 +76,7 @@ void uploadFile(char buffer[BUF_SIZE], char *URL)
     }
     else
     {
-        snprintf(buffer, BUF_SIZE, "[i] Successfully uploaded file into %s\n", filePath);
+        snprintf(buffer, BUF_SIZE, "[i] Successfully uploaded file into ftp://%s/%s\n", FTP_SERVER, filePath);
     }
 }
 
@@ -111,7 +108,7 @@ void downloadFile(char buffer[BUF_SIZE], char *URL)
     }
     else
     {
-        snprintf(buffer, BUF_SIZE, "[i] Successfully downloaded file into %s\n", filePath);
+        snprintf(buffer, BUF_SIZE, "[i] Successfully downloaded file from ftp://%s/%s\n", FTP_SERVER, filePath);
     }
 }
 
@@ -196,7 +193,8 @@ void serverHandler(SOCKET socket)
             buffer[bytesReceived] = CF_NULL;
             // Log request
             parseCommand(buffer, &command, &expectedBuffer, URL, TRUE);
-            printf("[%s] Received %s [%s]\n", getCurrTime(), commandName, URL);
+            printf("[%s] Received %s\n", getCurrTime(), commandName);
+            printf("[%s] URL:   [%s]\n", getCurrTime(), URL);
         }
         else
         {
