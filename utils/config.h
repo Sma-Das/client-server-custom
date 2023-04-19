@@ -1,3 +1,7 @@
+/**
+ * Configuration file for the server and client
+ */
+
 #define BUF_SIZE 4096
 
 #define HOST "127.0.0.1"
