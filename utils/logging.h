@@ -2,6 +2,12 @@
 
 #define TIME_BUF_SIZ 20
 
+/**
+ * Returns a string representing the current time in the format "%Y-%m-%d %H:%M:%S".
+ *
+ * @return A string representing the current time in the format "%Y-%m-%d %H:%M:%S".
+ *
+ */
 char *getCurrTime()
 {
     static char buffer[TIME_BUF_SIZ];

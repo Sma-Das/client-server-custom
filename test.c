@@ -13,6 +13,16 @@ int main()
     encrypt(command, buffer, bufferSize, rounds);
     printf("%s\n", buffer);
     decrypt(command, buffer, bufferSize, rounds);
+    encrypt(command, buffer, bufferSize, 0x800);
     printf("%s\n", buffer);
+<<<<<<< Updated upstream
+=======
+    splice(buffer, bufferSize);
+    // printf("%s\n", buffer);
+    for (int i = 0; i < bufferSize; i++) {
+       buffer[i] ^= 0xCAFEDEAD >> (8 * (i % 4)); 
+    }
+    // printf("%s\n", buffer);
+>>>>>>> Stashed changes
     return 0;
 }
