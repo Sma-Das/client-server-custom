@@ -33,10 +33,12 @@ UINT4 generateKey(COMMAND commandCode, UINT4 seed)
     return random;
 }
 
-#define RR_MASK 0b00000011
-#define RL_MASK RR_MASK << 2
-#define LR_MASK RL_MASK << 2
-#define LL_MASK LR_MASK << 2
+#define BITS 2
+#define RR 0 * BITS
+#define RL 1 * BITS
+#define LR 2 * BITS
+#define LL 3 * BITS
+#define MASK 0b11
 #define L_MASK 0xF0
 #define R_MASK 0x0F
 #define XORBYTE 0xCAFEDEAD
@@ -45,11 +47,13 @@ void splice(char *buffer, int bufferSize)
 {
     for (int i = 0; i < bufferSize; i++)
     {
-        char temp = buffer[i];
-        temp = (temp & LR_MASK) | (temp & LL_MASK) | (temp & RR_MASK) | (temp & RL_MASK);
-        temp ^= (XORBYTE >> (8 * (i % 4)));
-        temp = (temp & R_MASK) | (temp & L_MASK);
-        temp = (temp & LL_MASK) | (temp & RL_MASK) | (temp & LR_MASK) | (temp & RR_MASK);
+        char temp = 0;
+        temp |= ((buffer[i] & (MASK << LR)) >> LR) << LL;
+        temp |= ((buffer[i] & (MASK << RR)) >> RR) << LR;
+        temp |= ((buffer[i] & (MASK << LL)) >> LL) << RL;
+        temp |= ((buffer[i] & (MASK << RL)) >> RL) << RR;
+        temp ^= (0xCAFEDEAD >> (8 * (i % 4)));
+        temp = (temp & R_MASK) << 4 | (temp & L_MASK) >> 4;
         buffer[i] = temp;
     }
 }
@@ -58,10 +62,13 @@ void unsplice(char *buffer, int bufferSize)
 {
     for (int i = 0; i < bufferSize; i++)
     {
-        char temp = buffer[i];
-        temp = (temp & R_MASK) | (temp & L_MASK);
-        temp ^= (XORBYTE >> (8 * (i % 4)));
-        temp = (temp & LR_MASK) | (temp & LL_MASK) | (temp & RR_MASK) | (temp & RL_MASK);
+        buffer[i] = (buffer[i] & R_MASK) << 4 | (buffer[i] & L_MASK) >> 4;
+        buffer[i] ^= (0xCAFEDEAD >> (8 * (i % 4)));
+        char temp = 0;
+        temp |= ((buffer[i] & (MASK << RL)) >> RL) << LL;
+        temp |= ((buffer[i] & (MASK << LL)) >> LL) << LR;
+        temp |= ((buffer[i] & (MASK << RR)) >> RR) << RL;
+        temp |= ((buffer[i] & (MASK << LR)) >> LR) << RR;
         buffer[i] = temp;
     }
 }
@@ -106,6 +113,7 @@ void decrypt(COMMAND commandCode, char *buffer, int bufferSize, int rounds)
     }
     for (int i = 0; i < rounds; i++)
     {
+        unsplice(buffer, bufferSize);
         for (int j = 0; j < bufferSize - 1; j++)
         {
             if (keyIdx % sizeof(UINT4) == 0)
@@ -114,6 +122,5 @@ void decrypt(COMMAND commandCode, char *buffer, int bufferSize, int rounds)
             }
             buffer[j] ^= (key >> keyIdx++ % 8) & 0xFF;
         }
-        unsplice(buffer, bufferSize);
     }
 }
