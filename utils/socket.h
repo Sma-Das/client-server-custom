@@ -4,10 +4,6 @@
 
 typedef int (*CallbackFunc)(SOCKET, const struct sockaddr *, int);
 
-#if defined(_MSC_VER) || defined(__BORLANDC__)
-#pragma comment(lib, "Ws2_32.lib")
-#endif
-
 SOCKET createSocket(int af, int type, int protocol)
 {
     WSADATA wsa;
@@ -34,6 +30,7 @@ SOCKET createSocket(int af, int type, int protocol)
     return sock;
 }
 
+// Init a socket given a configuration
 int initializeSocket(SOCKET *sock, struct sockaddr_in config, CallbackFunc startSocket)
 {
     if (startSocket(*sock, (struct sockaddr *)&config, sizeof(config)) == SOCKET_ERROR)
