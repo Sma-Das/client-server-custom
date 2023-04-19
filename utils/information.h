@@ -98,7 +98,6 @@ void getIpAddress(char buffer[BUF_SIZE])
  * @return A string indicating the version of Windows that corresponds to the
  *         given major and minor version numbers.
  */
-
 char *parseVersion(DWORD major, DWORD minor)
 {
     switch (major)
