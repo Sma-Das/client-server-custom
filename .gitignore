@@ -56,3 +56,7 @@ dkms.conf
 
 # Environment files
 .env
+
+# Debugger files
+*.id*
+*.i64
