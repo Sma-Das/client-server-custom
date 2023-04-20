@@ -1,12 +1,14 @@
+/**
+ * Configuration file for the server and client
+ */
+
 #define BUF_SIZE 4096
 
 #define HOST "127.0.0.1"
 #define PORT 7777
+#define FTP_SERVER "localhost"
+#define FTP_USER "ftp-user"
+#define FTP_PASS "P@ssw0rd"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "./command.h"
-#include "./user_io.h"
-#include "./socket.h"
+#define MAX_CLIENTS 1
+#include "types.h"

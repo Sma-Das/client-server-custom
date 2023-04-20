@@ -53,3 +53,10 @@ dkms.conf
 
 # VSCode
 .vscode/
+
+# Environment files
+.env
+
+# Debugger files
+*.id*
+*.i64
